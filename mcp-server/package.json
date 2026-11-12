@@ -1,0 +1,25 @@
+{
+  "name": "switchfilehub-mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Servidor MCP somente leitura para acompanhar o projeto Switch File Hub no GitHub.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "dev": "tsx src/server.ts",
+    "check": "tsc --noEmit -p tsconfig.json"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.2",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}
