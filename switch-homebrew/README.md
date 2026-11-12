@@ -1,14 +1,14 @@
 # Switch File Hub — Homebrew para Nintendo Switch
 
-## Estado desta versao
+## Estado desta versão
 
-Esta pasta contem o cliente homebrew nativo do Switch. A versao 0.1.1 oferece somente:
+Esta pasta contém o cliente homebrew nativo do Switch. A versão 0.1.1 oferece somente:
 - montagem do microSD;
-- navegacao entre diretorios;
-- atualizacao da listagem;
-- mensagens visiveis quando a montagem ou abertura de uma pasta falha.
+- navegação entre diretórios;
+- atualização da listagem;
+- mensagens visíveis quando a montagem ou abertura de uma pasta falha.
 
-**Ainda nao oferece transferencia de arquivos, servidor FTP, cliente MTP ou integracao com o DBI.** A compilacao bem-sucedida do NRO confirma apenas que o binario foi gerado; nao confirma funcionamento em um console real.
+**Ainda não oferece transferência de arquivos, servidor FTP, cliente MTP ou integração com o DBI.** A compilação bem-sucedida do NRO confirma apenas que o binário foi gerado; não confirma funcionamento em um console real.
 
 ## Como compilar
 
@@ -19,17 +19,30 @@ cd switch-homebrew
 make
 ```
 
-O resultado esperado e `SwitchFileHub.nro`.
+O resultado esperado é `SwitchFileHub.nro`. O workflow do GitHub Actions verifica se o arquivo não está vazio e se contém a assinatura `NRO0` no cabeçalho.
 
-## Instalar
+## Instalar pelo cartão SD
 
-Copie o NRO para:
+O pacote `SwitchFileHub-SD.zip` publicado pelo GitHub Actions já contém a estrutura:
+
+```
+switch/
+└── SwitchFileHub.nro
+```
+
+Extraia o conteúdo na raiz do microSD, mantendo a pasta `switch`. O caminho final recomendado é:
+
+```
+/switch/SwitchFileHub.nro
+```
+
+Também é válido usar uma subpasta com o mesmo nome do executável:
 
 ```
 /switch/SwitchFileHub/SwitchFileHub.nro
 ```
 
-Abra pelo Homebrew Menu. Faca backup dos dados importantes antes de testar homebrew.
+O Homebrew Menu procura arquivos `.nro` dentro de `/switch`. A ausência de ícone pode afetar a aparência da entrada, mas não é, por si só, prova de que o executável não foi encontrado. Se o aplicativo não aparecer, confira primeiro o caminho e se o Homebrew Menu está lendo o mesmo microSD.
 
 ## Controles
 
@@ -39,11 +52,11 @@ Abra pelo Homebrew Menu. Faca backup dos dados importantes antes de testar homeb
 - Y: atualizar listagem.
 - +: sair.
 
-## Proximas etapas
+## Próximas etapas
 
-1. Testar a navegacao em um Switch real e registrar a mensagem de estado exibida.
-2. Definir uma arquitetura de comunicacao compativel entre o cliente desktop/mobile e o console.
-3. Implementar transferencias com validacao de caminhos, confirmacao de sobrescrita e tratamento de interrupcoes.
-4. Testar cada operacao em hardware antes de declarar a versao pronta.
+1. Testar a navegação em um Switch real e registrar a mensagem de estado exibida.
+2. Definir uma arquitetura de comunicação compatível entre o cliente desktop/mobile e o console.
+3. Implementar transferências com validação de caminhos, confirmação de sobrescrita e tratamento de interrupções.
+4. Testar cada operação em hardware antes de declarar a versão pronta.
 
-O cliente Flutter documentado em `MANUAL_SWITCH.md` usa um servidor FTP separado (por exemplo, o homebrew ftpd). Esse servidor nao e iniciado por este NRO.
+O cliente Flutter documentado em `MANUAL_SWITCH.md` usa um servidor FTP separado (por exemplo, o homebrew ftpd). Esse servidor não é iniciado por este NRO.
