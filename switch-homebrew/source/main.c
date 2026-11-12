@@ -85,16 +85,20 @@ int main(int argc, char **argv) {
     Result mount_result = fsdevMountSdmc();
     load_directory();
 
-    while (appletMainLoop()) {
-        hidScanInput();
-        u64 down = hidKeysDown(CONTROLLER_P1_AUTO);
+    padConfigureInput(1, HidNpadStyleSet_NpadStandard);
+    PadState pad;
+    padInitializeDefault(&pad);
 
-        if (down & KEY_PLUS) break;
-        if (down & KEY_DOWN && selected < entry_count - 1) selected++;
-        if (down & KEY_UP && selected > 0) selected--;
-        if (down & KEY_A) enter_selected();
-        if (down & KEY_B) go_parent();
-        if (down & KEY_Y) load_directory();
+    while (appletMainLoop()) {
+        padUpdate(&pad);
+        u64 down = padGetButtonsDown(&pad);
+
+        if (down & HidNpadButton_Plus) break;
+        if ((down & HidNpadButton_Down) && selected < entry_count - 1) selected++;
+        if ((down & HidNpadButton_Up) && selected > 0) selected--;
+        if (down & HidNpadButton_A) enter_selected();
+        if (down & HidNpadButton_B) go_parent();
+        if (down & HidNpadButton_Y) load_directory();
 
         consoleClear();
         printf("========================================\n");
