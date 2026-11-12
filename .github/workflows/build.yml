@@ -2,7 +2,7 @@ name: Build Switch File Hub
 
 on:
   push:
-    branches: [main]
+    branches: [main, fix/switch-browser-diagnostics]
     paths:
       - 'SwitchFileHub_1.0_FINAL.zip'
       - '.github/workflows/build.yml'
