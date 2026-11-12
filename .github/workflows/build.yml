@@ -48,7 +48,6 @@ jobs:
         run: |
           Set-Location $env:PROJECT_DIR
           flutter pub get
-          # Avisos de estilo/depreciação não bloqueiam o build; erros reais continuam falhando.
           flutter analyze --no-fatal-infos --no-fatal-warnings
           if (Test-Path 'test/format_test.dart') { flutter test test/format_test.dart }
           if (Test-Path 'test/widget_test.dart') { flutter test test/widget_test.dart }
@@ -108,11 +107,28 @@ jobs:
             cp tool/android/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
           fi
 
-      - name: Instalar dependências e validar
+      - name: Instalar dependências e ajustar Android SDK
         run: |
           cd "$PROJECT_DIR"
           flutter pub get
-          # Avisos de estilo/depreciação não bloqueiam o build; erros reais continuam falhando.
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          matches = list(Path.home().joinpath(".pub-cache/hosted/pub.dev").glob("desktop_drop-*/android/build.gradle"))
+          if not matches:
+              raise SystemExit("Não encontrei o build.gradle Android do pacote desktop_drop no cache do Pub.")
+          gradle = matches[0]
+          source = gradle.read_text()
+          updated, count_a = re.subn(r"(compileSdkVersion\\s+)33\\b", r"\\g<1>35", source)
+          updated, count_b = re.subn(r"(compileSdk\\s*=\\s*)33\\b", r"\\g<1>35", updated)
+          if count_a + count_b == 0:
+              print(source)
+              raise SystemExit(f"Não encontrei compileSdk 33 para atualizar em {gradle}")
+          gradle.write_text(updated)
+          print(f"Atualizado compileSdk para 35 em {gradle}")
+          PY
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager "platforms;android-35"
           flutter analyze --no-fatal-infos --no-fatal-warnings
           if [ -f test/format_test.dart ]; then flutter test test/format_test.dart; fi
           if [ -f test/widget_test.dart ]; then flutter test test/widget_test.dart; fi
