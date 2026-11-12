@@ -2,6 +2,11 @@ name: Build Switch Homebrew NRO
 
 on:
   push:
+    branches: [main, fix/switch-browser-diagnostics]
+    paths:
+      - "switch-homebrew/**"
+      - ".github/workflows/build-switch-homebrew.yml"
+  pull_request:
     branches: [main]
     paths:
       - "switch-homebrew/**"
@@ -21,15 +26,47 @@ jobs:
       - name: Baixar repositório
         uses: actions/checkout@v4
 
+      - name: Gerar ícone JPEG do aplicativo
+        run: |
+          if command -v pacman >/dev/null 2>&1; then
+            pacman -Sy --noconfirm imagemagick librsvg
+          elif command -v apt-get >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y imagemagick librsvg2-bin
+          fi
+          rsvg-convert -w 256 -h 256 switch-homebrew/icon.svg > /tmp/SwitchFileHub-icon.png
+          convert /tmp/SwitchFileHub-icon.png -background "#07152f" -alpha remove -alpha off -quality 90 switch-homebrew/SwitchFileHub.jpg
+          test -s switch-homebrew/SwitchFileHub.jpg
+
       - name: Compilar homebrew
         run: |
           cd switch-homebrew
           make
 
-      - name: Publicar arquivo NRO
+      - name: Validar arquivo NRO e ícone
+        run: |
+          test -s switch-homebrew/SwitchFileHub.nro
+          test -s switch-homebrew/SwitchFileHub.jpg
+          magic="$(dd if=switch-homebrew/SwitchFileHub.nro bs=1 skip=16 count=4 2>/dev/null)"
+          if [ "$magic" != "NRO0" ]; then
+            echo "Erro: o arquivo gerado não possui a assinatura NRO0 esperada."
+            exit 1
+          fi
+          echo "NRO válido: assinatura NRO0 encontrada; ícone JPEG incorporado na compilação."
+
+      - name: Preparar pacote para o cartão SD
+        run: |
+          mkdir -p package/switch
+          cp switch-homebrew/SwitchFileHub.nro package/switch/SwitchFileHub.nro
+          cd package
+          zip -r ../SwitchFileHub-SD.zip switch
+
+      - name: Publicar NRO e pacote para SD
         uses: actions/upload-artifact@v4
         with:
-          name: SwitchFileHub-Nintendo-Switch-NRO
-          path: switch-homebrew/SwitchFileHub.nro
+          name: SwitchFileHub-Nintendo-Switch
+          path: |
+            switch-homebrew/SwitchFileHub.nro
+            SwitchFileHub-SD.zip
           if-no-files-found: error
           retention-days: 14

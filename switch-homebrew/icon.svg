@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07152f"/><stop offset="1" stop-color="#020817"/></linearGradient>
+  <linearGradient id="folder" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#00d9ff"/><stop offset="1" stop-color="#0752bb"/></linearGradient>
+  <linearGradient id="lime" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c8ff42"/><stop offset="1" stop-color="#32d94c"/></linearGradient>
+</defs>
+<rect width="256" height="256" rx="34" fill="url(#bg)"/>
+<circle cx="128" cy="128" r="105" fill="none" stroke="#00cfff" stroke-width="8" stroke-dasharray="185 475" transform="rotate(-45 128 128)"/>
+<circle cx="128" cy="128" r="105" fill="none" stroke="#7bff36" stroke-width="8" stroke-dasharray="185 475" transform="rotate(135 128 128)"/>
+<path d="M197 28l29 13-25 20" fill="none" stroke="#00dfff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M58 228l-29-13 25-20" fill="none" stroke="#8cff35" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M38 91q0-12 12-12h51l15 16h91q12 0 12 12v79q0 13-13 13H51q-13 0-13-13z" fill="url(#folder)" stroke="#52edff" stroke-width="5"/>
+<path d="M48 111h161v70q0 10-10 10H58q-10 0-10-10z" fill="#063c8a"/>
+<rect x="103" y="51" width="43" height="65" rx="6" fill="url(#lime)" stroke="#e1ff9a" stroke-width="3"/>
+<path d="M151 65h34q6 0 6 6v45h-40z" fill="#078be7" stroke="#6ceaff" stroke-width="3"/>
+<g>
+<rect x="75" y="130" width="28" height="28" rx="5" fill="#00dfff"/>
+<rect x="112" y="130" width="28" height="28" rx="5" fill="#8cff35"/>
+<rect x="75" y="166" width="28" height="28" rx="5" fill="#8cff35"/>
+<rect x="112" y="166" width="28" height="28" rx="5" fill="#00dfff"/>
+</g>
+</svg>

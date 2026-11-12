@@ -18,7 +18,7 @@ INCLUDES := include
 
 APP_TITLE := Switch File Hub
 APP_AUTHOR := iikawalucas-13
-APP_VERSION := 0.1.0
+APP_VERSION := 0.1.3
 
 ARCH := -march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE
 CFLAGS := -g -Wall -Wextra -O2 -ffunction-sections -fdata-sections $(ARCH)
@@ -54,6 +54,7 @@ export HFILES_BIN := $(addsuffix .h,$(subst .,_,$(BINFILES)))
 export INCLUDE := $(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) $(foreach dir,$(LIBDIRS),-I$(dir)/include) -I$(CURDIR)/$(BUILD)
 export LIBPATHS := $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
+export NROFLAGS += --icon=$(CURDIR)/SwitchFileHub.jpg
 export NROFLAGS += --nacp=$(CURDIR)/$(TARGET).nacp
 
 .PHONY: $(BUILD) clean all
