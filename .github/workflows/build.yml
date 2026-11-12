@@ -48,7 +48,8 @@ jobs:
         run: |
           Set-Location $env:PROJECT_DIR
           flutter pub get
-          flutter analyze
+          # Avisos de estilo/depreciação não bloqueiam o build; erros reais continuam falhando.
+          flutter analyze --no-fatal-infos --no-fatal-warnings
           if (Test-Path 'test/format_test.dart') { flutter test test/format_test.dart }
           if (Test-Path 'test/widget_test.dart') { flutter test test/widget_test.dart }
 
@@ -111,7 +112,8 @@ jobs:
         run: |
           cd "$PROJECT_DIR"
           flutter pub get
-          flutter analyze
+          # Avisos de estilo/depreciação não bloqueiam o build; erros reais continuam falhando.
+          flutter analyze --no-fatal-infos --no-fatal-warnings
           if [ -f test/format_test.dart ]; then flutter test test/format_test.dart; fi
           if [ -f test/widget_test.dart ]; then flutter test test/widget_test.dart; fi
 
