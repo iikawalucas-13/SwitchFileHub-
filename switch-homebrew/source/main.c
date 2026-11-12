@@ -17,13 +17,18 @@ static Entry entries[MAX_ENTRIES];
 static int entry_count = 0;
 static int selected = 0;
 static char current_path[PATH_LENGTH] = "sdmc:/";
+static char directory_status[160] = "Aguardando montagem do microSD...";
 
 static void load_directory(void) {
     entry_count = 0;
     selected = 0;
 
     DIR *dir = opendir(current_path);
-    if (!dir) return;
+    if (!dir) {
+        snprintf(directory_status, sizeof(directory_status),
+                 "ERRO: nao foi possivel abrir esta pasta.");
+        return;
+    }
 
     struct dirent *item;
     while ((item = readdir(dir)) != NULL && entry_count < MAX_ENTRIES) {
@@ -44,6 +49,14 @@ static void load_directory(void) {
     }
 
     closedir(dir);
+
+    if (entry_count == MAX_ENTRIES) {
+        snprintf(directory_status, sizeof(directory_status),
+                 "Listagem limitada aos primeiros %d itens.", MAX_ENTRIES);
+    } else {
+        snprintf(directory_status, sizeof(directory_status),
+                 "Pasta carregada: %d item(ns).", entry_count);
+    }
 }
 
 static void go_parent(void) {
@@ -71,10 +84,14 @@ static void enter_selected(void) {
         current_path[strlen(current_path) - 1] == '/' ? "" : "/",
         entries[selected].name);
 
-    if (written > 0 && (size_t)written < sizeof(next_path)) {
-        snprintf(current_path, sizeof(current_path), "%s", next_path);
-        load_directory();
+    if (written <= 0 || (size_t)written >= sizeof(next_path)) {
+        snprintf(directory_status, sizeof(directory_status),
+                 "ERRO: caminho muito longo.");
+        return;
     }
+
+    snprintf(current_path, sizeof(current_path), "%s", next_path);
+    load_directory();
 }
 
 int main(int argc, char **argv) {
@@ -83,7 +100,14 @@ int main(int argc, char **argv) {
 
     consoleInit(NULL);
     Result mount_result = fsdevMountSdmc();
-    load_directory();
+
+    if (R_SUCCEEDED(mount_result)) {
+        load_directory();
+    } else {
+        snprintf(directory_status, sizeof(directory_status),
+                 "ERRO: falha ao montar o microSD (0x%08X).",
+                 (unsigned int)mount_result);
+    }
 
     padConfigureInput(1, HidNpadStyleSet_NpadStandard);
     PadState pad;
@@ -98,19 +122,16 @@ int main(int argc, char **argv) {
         if ((down & HidNpadButton_Up) && selected > 0) selected--;
         if (down & HidNpadButton_A) enter_selected();
         if (down & HidNpadButton_B) go_parent();
-        if (down & HidNpadButton_Y) load_directory();
+        if ((down & HidNpadButton_Y) && R_SUCCEEDED(mount_result)) load_directory();
 
         consoleClear();
         printf("========================================\n");
-        printf("          SWITCH FILE HUB 0.1.0         \n");
+        printf("          SWITCH FILE HUB 0.1.1         \n");
         printf("========================================\n\n");
         printf("MicroSD: %s\n", R_SUCCEEDED(mount_result) ? "montado" : "erro ao montar");
-        printf("Pasta: %s\n\n", current_path);
+        printf("Pasta: %s\n", current_path);
+        printf("Estado: %s\n\n", directory_status);
         printf("Arquivos e pastas (max. %d):\n", MAX_ENTRIES);
-
-        if (entry_count == 0) {
-            printf("  (pasta vazia ou nao foi possivel ler)\n");
-        }
 
         for (int i = 0; i < entry_count; i++) {
             printf("%s %s %s\n",
@@ -120,10 +141,11 @@ int main(int argc, char **argv) {
         }
 
         printf("\nControles: A abrir pasta | B voltar | Y atualizar | + sair\n");
+        printf("Aviso: esta versao navega no microSD; nao transfere arquivos.\n");
         consoleUpdate(NULL);
     }
 
-    fsdevUnmountDevice("sdmc");
+    if (R_SUCCEEDED(mount_result)) fsdevUnmountDevice("sdmc");
     consoleExit(NULL);
     return 0;
 }
