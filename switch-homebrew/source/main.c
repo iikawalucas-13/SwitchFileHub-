@@ -17,7 +17,20 @@ static Entry entries[MAX_ENTRIES];
 static int entry_count = 0;
 static int selected = 0;
 static char current_path[PATH_LENGTH] = "sdmc:/";
-static char directory_status[160] = "Aguardando montagem do microSD...";
+static char directory_status[256] = "Aguardando montagem do microSD...";
+static Result mount_result = 0;
+static bool exfat_query_ok = false;
+static bool exfat_supported = false;
+
+static void diagnose_mount_error(Result rc) {
+    Result exfat_rc = fsIsExFatSupported(&exfat_supported);
+    exfat_query_ok = R_SUCCEEDED(exfat_rc);
+    snprintf(directory_status, sizeof(directory_status),
+        "Falha microSD: 0x%08X | Modulo: %u | Descricao: %u | exFAT: %s",
+        (unsigned int)rc, (unsigned int)R_MODULE(rc),
+        (unsigned int)R_DESCRIPTION(rc),
+        exfat_query_ok ? (exfat_supported ? "suportado" : "nao suportado") : "consulta indisponivel");
+}
 
 static void load_directory(void) {
     entry_count = 0;
@@ -99,14 +112,12 @@ int main(int argc, char **argv) {
     (void)argv;
 
     consoleInit(NULL);
-    Result mount_result = fsdevMountSdmc();
+    mount_result = fsdevMountSdmc();
 
     if (R_SUCCEEDED(mount_result)) {
         load_directory();
     } else {
-        snprintf(directory_status, sizeof(directory_status),
-                 "ERRO: falha ao montar o microSD (0x%08X).",
-                 (unsigned int)mount_result);
+        diagnose_mount_error(mount_result);
     }
 
     padConfigureInput(1, HidNpadStyleSet_NpadStandard);
@@ -130,7 +141,13 @@ int main(int argc, char **argv) {
         printf("========================================\n\n");
         printf("MicroSD: %s\n", R_SUCCEEDED(mount_result) ? "montado" : "erro ao montar");
         printf("Pasta: %s\n", current_path);
-        printf("Estado: %s\n\n", directory_status);
+        printf("Estado: %s\n", directory_status);
+        if (R_FAILED(mount_result)) {
+            printf("Diagnostico: confira se o console reconhece o microSD.\n");
+            printf("Nao formate o cartao por causa deste erro.\n\n");
+        } else {
+            printf("\n");
+        }
         printf("Arquivos e pastas (max. %d):\n", MAX_ENTRIES);
 
         for (int i = 0; i < entry_count; i++) {
@@ -142,6 +159,7 @@ int main(int argc, char **argv) {
 
         printf("\nControles: A abrir pasta | B voltar | Y atualizar | + sair\n");
         printf("Aviso: esta versao navega no microSD; nao transfere arquivos.\n");
+        printf("Build diagnostico: 0.1.2\n");
         consoleUpdate(NULL);
     }
 
