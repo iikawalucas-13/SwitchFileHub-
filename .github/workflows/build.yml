@@ -99,6 +99,9 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Gerar estrutura Android
         run: |
           cd "$PROJECT_DIR"
