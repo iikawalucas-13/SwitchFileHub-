@@ -1,0 +1,35 @@
+name: Build Switch Homebrew NRO
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "switch-homebrew/**"
+      - ".github/workflows/build-switch-homebrew.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-switch:
+    name: Nintendo Switch NRO
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkita64:latest
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+
+      - name: Compilar homebrew
+        run: |
+          cd switch-homebrew
+          make
+
+      - name: Publicar arquivo NRO
+        uses: actions/upload-artifact@v4
+        with:
+          name: SwitchFileHub-Nintendo-Switch-NRO
+          path: switch-homebrew/SwitchFileHub.nro
+          if-no-files-found: error
+          retention-days: 14
