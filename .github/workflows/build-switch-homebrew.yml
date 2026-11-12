@@ -6,6 +6,11 @@ on:
     paths:
       - "switch-homebrew/**"
       - ".github/workflows/build-switch-homebrew.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "switch-homebrew/**"
+      - ".github/workflows/build-switch-homebrew.yml"
   workflow_dispatch:
 
 permissions:
