@@ -113,17 +113,14 @@ jobs:
           flutter pub get
           python3 - <<'PY'
           from pathlib import Path
-          import re
           matches = list(Path.home().joinpath(".pub-cache/hosted/pub.dev").glob("desktop_drop-*/android/build.gradle"))
           if not matches:
               raise SystemExit("Não encontrei o build.gradle Android do pacote desktop_drop no cache do Pub.")
           gradle = matches[0]
           source = gradle.read_text()
-          updated, count_a = re.subn(r"(compileSdkVersion\s+)33\b", r"\g<1>35", source)
-          updated, count_b = re.subn(r"(compileSdk\s*=\s*)33\b", r"\g<1>35", updated)
-          if count_a + count_b == 0:
-              print(source)
-              raise SystemExit(f"Não encontrei compileSdk 33 para atualizar em {gradle}")
+          updated = source.replace("compileSdk 33", "compileSdk 35").replace("compileSdkVersion 33", "compileSdkVersion 35")
+          if updated == source:
+              raise SystemExit(f"Não encontrei uma declaração compileSdk 33 em {gradle}")
           gradle.write_text(updated)
           print(f"Atualizado compileSdk para 35 em {gradle}")
           PY
