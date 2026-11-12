@@ -2,7 +2,7 @@ name: Build Switch Homebrew NRO
 
 on:
   push:
-    branches: [main]
+    branches: [main, fix/switch-browser-diagnostics]
     paths:
       - "switch-homebrew/**"
       - ".github/workflows/build-switch-homebrew.yml"
