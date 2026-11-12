@@ -1,0 +1,131 @@
+name: Build Switch File Hub
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'SwitchFileHub_1.0_FINAL.zip'
+      - '.github/workflows/build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Windows 11 x64
+    runs-on: windows-latest
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+
+      - name: Preparar código-fonte do ZIP
+        shell: pwsh
+        run: |
+          $zip = Join-Path $env:GITHUB_WORKSPACE 'SwitchFileHub_1.0_FINAL.zip'
+          if (!(Test-Path $zip)) { throw 'ZIP SwitchFileHub_1.0_FINAL.zip não encontrado na raiz.' }
+          Expand-Archive -LiteralPath $zip -DestinationPath "$env:RUNNER_TEMP\sfh-source" -Force
+          $pubspec = Get-ChildItem "$env:RUNNER_TEMP\sfh-source" -Filter pubspec.yaml -Recurse | Select-Object -First 1
+          if (!$pubspec) { throw 'pubspec.yaml não foi encontrado dentro do ZIP.' }
+          "PROJECT_DIR=$($pubspec.Directory.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Host "Projeto encontrado em $($pubspec.Directory.FullName)"
+
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Gerar estrutura Windows
+        shell: pwsh
+        run: |
+          Set-Location $env:PROJECT_DIR
+          flutter config --enable-windows-desktop
+          flutter create --platforms=windows --org com.switchfilehub --project-name switch_file_hub .
+
+      - name: Instalar dependências e validar
+        shell: pwsh
+        run: |
+          Set-Location $env:PROJECT_DIR
+          flutter pub get
+          flutter analyze
+          if (Test-Path 'test/format_test.dart') { flutter test test/format_test.dart }
+          if (Test-Path 'test/widget_test.dart') { flutter test test/widget_test.dart }
+
+      - name: Compilar Windows
+        shell: pwsh
+        run: |
+          Set-Location $env:PROJECT_DIR
+          flutter build windows --release
+          $release = Join-Path $env:PROJECT_DIR 'build\windows\x64\runner\Release'
+          if (!(Test-Path (Join-Path $release 'switch_file_hub.exe'))) {
+            $exe = Get-ChildItem (Join-Path $env:PROJECT_DIR 'build\windows') -Filter '*.exe' -Recurse | Select-Object -First 1
+            if (!$exe) { throw 'Executável não encontrado após a compilação.' }
+            $release = $exe.Directory.FullName
+          }
+          New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\dist" | Out-Null
+          Compress-Archive -Path "$release\*" -DestinationPath "$env:GITHUB_WORKSPACE\dist\SwitchFileHub_Windows_x64.zip" -Force
+
+      - name: Publicar executável Windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: SwitchFileHub-Windows-x64
+          path: dist/SwitchFileHub_Windows_x64.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+
+      - name: Preparar código-fonte do ZIP
+        run: |
+          mkdir -p "$RUNNER_TEMP/sfh-source"
+          unzip -q SwitchFileHub_1.0_FINAL.zip -d "$RUNNER_TEMP/sfh-source"
+          PROJECT_DIR="$(find "$RUNNER_TEMP/sfh-source" -name pubspec.yaml -not -path '*/.dart_tool/*' -print -quit | xargs dirname)"
+          if [ -z "$PROJECT_DIR" ] || [ ! -f "$PROJECT_DIR/pubspec.yaml" ]; then
+            echo "pubspec.yaml não foi encontrado dentro do ZIP."
+            exit 1
+          fi
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+          echo "Projeto encontrado em $PROJECT_DIR"
+
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Gerar estrutura Android
+        run: |
+          cd "$PROJECT_DIR"
+          flutter create --platforms=android --org com.switchfilehub --project-name switch_file_hub .
+          if [ -f tool/android/AndroidManifest.xml ]; then
+            cp tool/android/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
+          fi
+
+      - name: Instalar dependências e validar
+        run: |
+          cd "$PROJECT_DIR"
+          flutter pub get
+          flutter analyze
+          if [ -f test/format_test.dart ]; then flutter test test/format_test.dart; fi
+          if [ -f test/widget_test.dart ]; then flutter test test/widget_test.dart; fi
+
+      - name: Compilar APK
+        run: |
+          cd "$PROJECT_DIR"
+          flutter build apk --release
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          cp build/app/outputs/flutter-apk/app-release.apk "$GITHUB_WORKSPACE/dist/SwitchFileHub.apk"
+
+      - name: Publicar APK Android
+        uses: actions/upload-artifact@v4
+        with:
+          name: SwitchFileHub-Android-APK
+          path: dist/SwitchFileHub.apk
+          if-no-files-found: error
+          retention-days: 14
