@@ -26,20 +26,33 @@ jobs:
       - name: Baixar repositório
         uses: actions/checkout@v4
 
+      - name: Gerar ícone JPEG do aplicativo
+        run: |
+          if command -v pacman >/dev/null 2>&1; then
+            pacman -Sy --noconfirm imagemagick librsvg
+          elif command -v apt-get >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y imagemagick librsvg2-bin
+          fi
+          rsvg-convert -w 256 -h 256 switch-homebrew/icon.svg > /tmp/SwitchFileHub-icon.png
+          convert /tmp/SwitchFileHub-icon.png -background "#07152f" -alpha remove -alpha off -quality 90 switch-homebrew/SwitchFileHub.jpg
+          test -s switch-homebrew/SwitchFileHub.jpg
+
       - name: Compilar homebrew
         run: |
           cd switch-homebrew
           make
 
-      - name: Validar arquivo NRO
+      - name: Validar arquivo NRO e ícone
         run: |
           test -s switch-homebrew/SwitchFileHub.nro
+          test -s switch-homebrew/SwitchFileHub.jpg
           magic="$(dd if=switch-homebrew/SwitchFileHub.nro bs=1 skip=16 count=4 2>/dev/null)"
           if [ "$magic" != "NRO0" ]; then
             echo "Erro: o arquivo gerado não possui a assinatura NRO0 esperada."
             exit 1
           fi
-          echo "NRO válido: assinatura NRO0 encontrada."
+          echo "NRO válido: assinatura NRO0 encontrada; ícone JPEG incorporado na compilação."
 
       - name: Preparar pacote para o cartão SD
         run: |
