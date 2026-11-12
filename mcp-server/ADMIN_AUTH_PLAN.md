@@ -4,7 +4,7 @@
 
 O aplicativo terá um único APK e dois perfis após o login Google:
 
-- **ADMIN:** somente a identidade Google autorizada pelo backend. Identidade administrativa informada pelo proprietário: `iikawalucas@gmail.com`.
+- **ADMIN:** somente a identidade Google autorizada pelo backend. Identidade administrativa informada pelo proprietário será configurada somente no ambiente privado do backend, nunca publicada no repositório.
 - **NORMAL:** qualquer outra conta Google autenticada.
 
 ## Configuração privada
