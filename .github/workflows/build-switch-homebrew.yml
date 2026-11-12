@@ -31,10 +31,29 @@ jobs:
           cd switch-homebrew
           make
 
-      - name: Publicar arquivo NRO
+      - name: Validar arquivo NRO
+        run: |
+          test -s switch-homebrew/SwitchFileHub.nro
+          magic="$(dd if=switch-homebrew/SwitchFileHub.nro bs=1 skip=16 count=4 2>/dev/null)"
+          if [ "$magic" != "NRO0" ]; then
+            echo "Erro: o arquivo gerado não possui a assinatura NRO0 esperada."
+            exit 1
+          fi
+          echo "NRO válido: assinatura NRO0 encontrada."
+
+      - name: Preparar pacote para o cartão SD
+        run: |
+          mkdir -p package/switch
+          cp switch-homebrew/SwitchFileHub.nro package/switch/SwitchFileHub.nro
+          cd package
+          zip -r ../SwitchFileHub-SD.zip switch
+
+      - name: Publicar NRO e pacote para SD
         uses: actions/upload-artifact@v4
         with:
-          name: SwitchFileHub-Nintendo-Switch-NRO
-          path: switch-homebrew/SwitchFileHub.nro
+          name: SwitchFileHub-Nintendo-Switch
+          path: |
+            switch-homebrew/SwitchFileHub.nro
+            SwitchFileHub-SD.zip
           if-no-files-found: error
           retention-days: 14
