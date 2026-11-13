@@ -14,7 +14,7 @@
 
 ## Cliente Android / Windows
 - O código Flutter está empacotado em `SwitchFileHub_1.0_FINAL.zip`; o cliente usa FTP passivo, MLSD/LIST, STOR/RETR e descoberta de servidores por banner FTP na porta configurada.
-- O workflow do cliente Android/Windows foi iniciado na branch de integração; os resultados finais dos jobs de compilação ainda precisam ser confirmados. Mesmo com build aprovado, a conexão real com o NRO depende de teste em dispositivos físicos.
+- O workflow do cliente Android/Windows concluiu com sucesso na branch de integração; APK e pacote Windows x64 foram publicados. Mesmo com build aprovado, a conexão real com o NRO depende de teste em dispositivos físicos.
 - Android: seleção de arquivos e destino de downloads dependem das restrições de armazenamento do Android (Scoped Storage); validar em dispositivo real.
 - Windows: alvo x64.
 - Sem retomada automática de transferência interrompida.
