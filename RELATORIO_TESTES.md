@@ -62,3 +62,14 @@
 - `flutter analyze` concluiu sem erros fatais. Testes registrados no log: 14 testes de unidade/formato e 1 teste de widget aprovados.
 - Avisos observados: plugin `desktop_drop` usa Kotlin Gradle Plugin e poderá exigir migração em versões futuras do Flutter; Android também registrou mensagem do watcher de diretório já monitorado, mas a compilação terminou com sucesso.
 - Esses resultados validam compilação e testes automatizados, não execução do APK em telefone nem do EXE em outro PC.
+
+### NRO atualizado após ajustes de interface — execução 43487466206
+
+- Commit validado: `635c1b0bb099a6e1c2ae1f1e8e39fc039abf1048`.
+- Workflow [43487466206](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43487466206): job Nintendo Switch NRO e todas as etapas concluídas com sucesso.
+- Artifact final do NRO e pacote SD: [SwitchFileHub-Nintendo-Switch](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43487466206/artifacts/14067463867), ID 14067463867.
+- ZIP e ZIP interno do cartão SD foram testados; o pacote contém `switch/SwitchFileHub.nro`.
+- Assinatura `NRO0` confirmada; NRO com 9.383.341 bytes.
+- SHA-256 do NRO desta compilação: `201a8ad07ba7504da4afc32cf9fd3a574ae3cae2cacbf90656d9d089d061d620`.
+- O painel de transferências agora mostra contadores da sessão; ao retornar para arquivos, a listagem é recarregada para refletir alterações feitas via FTP. O rodapé foi reduzido para evitar sobreposição com o botão na tela.
+- Continua pendente apenas a validação no hardware real: iniciar o NRO no console, conectar Android/Windows pela rede e testar operações FTP.
