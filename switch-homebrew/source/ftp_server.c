@@ -211,7 +211,8 @@ static void serve_client(int control) {
             struct stat st;
             if (stat(path,&st)==0 && S_ISDIR(st.st_mode)) {
                 if (target[0]=='/') snprintf(cwd,sizeof(cwd),"%s",target);
-                else { if (strcmp(cwd,"/")) strncat(cwd,"/",sizeof(cwd)-strlen(cwd)-1); strncat(cwd,target,sizeof(cwd)-strlen(cwd)-1); }
+                else if (!strcmp(cwd,"/")) snprintf(cwd,sizeof(cwd),"/%s",target);
+                else { strncat(cwd,"/",sizeof(cwd)-strlen(cwd)-1); strncat(cwd,target,sizeof(cwd)-strlen(cwd)-1); }
                 reply(control,"250 Directory changed\r\n");
             } else reply(control,"550 Directory unavailable\r\n");
         } else if (!strcmp(line,"PASV")) {
@@ -225,7 +226,8 @@ static void serve_client(int control) {
             int fd=socket(AF_INET,SOCK_STREAM,0);
             memset(&a,0,sizeof(a)); a.sin_family=AF_INET; a.sin_addr.s_addr=htonl(INADDR_ANY);
             if (fd<0 || bind(fd,(struct sockaddr*)&a,sizeof(a))<0 || listen(fd,1)<0 || getsockname(fd,(struct sockaddr*)&a,&alen)<0) {
-                if(fd>=0) close(fd); reply(control,"425 Cannot open passive listener\r\n");
+                if (fd >= 0) close(fd);
+                reply(control,"425 Cannot open passive listener\r\n");
             } else {
                 data_listener=fd; snprintf(second,sizeof(second),"229 Entering Extended Passive Mode (|||%u|)\r\n",ntohs(a.sin_port)); reply(control,second);
             }
