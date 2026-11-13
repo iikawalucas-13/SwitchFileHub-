@@ -4,7 +4,7 @@
 .SUFFIXES:
 
 ifeq ($(strip $(DEVKITPRO)),)
-$(error "Please set DEVKITPRO in your environment.")
+$(error "Please set DEVKITPRO in your environment.)
 endif
 
 TOPDIR ?= $(CURDIR)
@@ -54,7 +54,9 @@ export HFILES_BIN := $(addsuffix .h,$(subst .,_,$(BINFILES)))
 export INCLUDE := $(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) $(foreach dir,$(LIBDIRS),-I$(dir)/include) -I$(CURDIR)/$(BUILD)
 export LIBPATHS := $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
-export NROFLAGS += --icon=$(CURDIR)/SwitchFileHub.jpg
+# A missing optional icon must not prevent the homebrew executable from building.
+# Add --icon here only after the original Switch icon file is committed.
+
 export NROFLAGS += --nacp=$(CURDIR)/$(TARGET).nacp
 
 .PHONY: $(BUILD) clean all
