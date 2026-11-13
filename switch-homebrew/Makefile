@@ -54,9 +54,8 @@ export HFILES_BIN := $(addsuffix .h,$(subst .,_,$(BINFILES)))
 export INCLUDE := $(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) $(foreach dir,$(LIBDIRS),-I$(dir)/include) -I$(CURDIR)/$(BUILD)
 export LIBPATHS := $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
-# A missing optional icon must not prevent the homebrew executable from building.
-# Add --icon here only after the original Switch icon file is committed.
-
+# Embed the supplied original JPEG as the Homebrew menu icon.
+export NROFLAGS += --icon=$(CURDIR)/SwitchFileHub.jpg
 export NROFLAGS += --nacp=$(CURDIR)/$(TARGET).nacp
 
 .PHONY: $(BUILD) clean all
