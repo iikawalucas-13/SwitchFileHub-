@@ -344,7 +344,7 @@ public:
         ftp = pu::ui::elm::Button::New(24, 166, 1232, 82,
             "FTP  |  INICIANDO SERVIDOR...", pu::ui::Color(255,255,255,255),
             pu::ui::Color(24,91,145,255));
-        ftp->SetOnClick([]() {});
+        ftp->SetOnClick([]() { if (ftpServerState() != 2) ftpServerStart(); });
 
         path = pu::ui::elm::TextBlock::New(42, 264, "MICROSD  /  sdmc:/");
         path->SetColor(pu::ui::Color(104,205,255,255));
@@ -455,7 +455,7 @@ public:
             }
             content += "\n\n";
             content += directory_status;
-            layout->shortcuts->SetText("A ABRIR   B VOLTAR   Y ATUALIZAR   X NOVA PASTA   L RENOMEAR   R EXCLUIR   ZL COPIAR   ZR MOVER");
+            layout->shortcuts->SetText("A ABRIR   B VOLTAR   Y ATUALIZAR / REINICIAR FTP   X NOVA PASTA   L RENOMEAR   R EXCLUIR   ZL COPIAR   ZR MOVER");
         }
         layout->files->SetText(content);
     }
@@ -475,6 +475,7 @@ public:
             }
             if(down & HidNpadButton_Y) {
                 if(!g_show_transfers && R_SUCCEEDED(mount_result)) load_directory();
+                if(ftpServerState() != 2) ftpServerStart();
             }
             if(down & HidNpadButton_Up && !g_show_transfers && selected > 0) selected--;
             if(down & HidNpadButton_Down && !g_show_transfers && selected < entry_count - 1) selected++;
