@@ -53,3 +53,12 @@
 - SHA-256 do NRO: `93048dd07291b3177f6de49c59452875a9719633fa0fcd2e881341ce95480ec8`.
 - Cliente Android/Windows: execução [43486780996](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43486780996) ainda estava em andamento na última consulta; nenhum resultado final foi declarado.
 - Teste em Switch físico: não executado por este ambiente. Conectividade Wi-Fi, operações FTP reais, interface no console e estabilidade permanecem pendentes.
+
+### Cliente Android e Windows — execução 43486780996
+
+- Workflow [Build Switch File Hub](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43486780996) — ambos os jobs concluídos com sucesso.
+- Windows 11 x64: compilação Release aprovada; artifact [SwitchFileHub-Windows-x64](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43486780996/artifacts/14067478694), ID 14067478694. O ZIP interno contém EXE, DLLs e pasta `data`.
+- Android: compilação `app-release.apk` aprovada; artifact [SwitchFileHub-Android-APK](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43486780996/artifacts/14066974813), ID 14066974813. APK extraído e estrutura ZIP validada.
+- `flutter analyze` concluiu sem erros fatais. Testes registrados no log: 14 testes de unidade/formato e 1 teste de widget aprovados.
+- Avisos observados: plugin `desktop_drop` usa Kotlin Gradle Plugin e poderá exigir migração em versões futuras do Flutter; Android também registrou mensagem do watcher de diretório já monitorado, mas a compilação terminou com sucesso.
+- Esses resultados validam compilação e testes automatizados, não execução do APK em telefone nem do EXE em outro PC.
