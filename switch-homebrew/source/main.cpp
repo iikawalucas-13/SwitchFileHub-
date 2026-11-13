@@ -336,11 +336,11 @@ public:
         subtitle = pu::ui::elm::TextBlock::New(56, 59, "GERENCIADOR DE ARQUIVOS");
         subtitle->SetColor(pu::ui::Color(151, 164, 187, 255));
 
-        status = pu::ui::elm::Button::New(28, 120, 590, 72,
+        status = pu::ui::elm::Button::New(28, 108, 590, 64,
             "MICROSD  |  VERIFICANDO...", pu::ui::Color(235,245,255,255),
             pu::ui::Color(31,48,70,255));
         status->SetOnClick([]() {});
-        ftp = pu::ui::elm::Button::New(638, 120, 614, 72,
+        ftp = pu::ui::elm::Button::New(638, 108, 614, 64,
             "FTP  |  DESLIGADO", pu::ui::Color(235,245,255,255),
             pu::ui::Color(31,48,70,255));
         ftp->SetOnClick([]() {});
@@ -351,7 +351,7 @@ public:
         files_panel = pu::ui::elm::Button::New(28, 218, 820, 414,
             " ", pu::ui::Color(255,255,255,255), pu::ui::Color(23,28,41,255));
         files_panel->SetOnClick([]() {});
-        files = pu::ui::elm::TextBlock::New(54, 258, "ARQUIVOS\n\nCarregando...");
+        files = pu::ui::elm::TextBlock::New(54, 236, "ARQUIVOS\n\nCarregando...");
         files->SetColor(pu::ui::Color(239, 243, 250, 255));
 
         tools_panel = pu::ui::elm::Button::New(868, 218, 384, 414,
@@ -406,7 +406,7 @@ public:
         int fs = ftpServerState();
         if (fs == 2) {
             char ftp_text[180];
-            snprintf(ftp_text, sizeof(ftp_text), "FTP  |  ONLINE  |  %s:5000", ftpServerIp());
+            snprintf(ftp_text, sizeof(ftp_text), "FTP ONLINE  |  %s:5000", ftpServerIp());
             layout->ftp->SetContent(ftp_text);
         } else if (fs == 1) {
             layout->ftp->SetContent("FTP  |  INICIANDO SERVIDOR...");
