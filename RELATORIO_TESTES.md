@@ -38,7 +38,7 @@
 - O limite de quatro sessões e a identificação do IP precisam ser confirmados no Switch físico.
 
 ## Conclusão
-**Entrega de código e CI parcialmente validada; teste funcional no Nintendo Switch físico ainda pendente.** Não considerar o projeto pronto para entrega final até concluir o teste real e confirmar que o cliente Android/Windows conecta ao servidor integrado sem iniciar ftpd separado.
+**Compilações CI do NRO, Android e Windows aprovadas; testes automatizados Flutter aprovados.** A validação funcional final continua pendente porque exige executar o NRO em um Switch físico e conectar os clientes à mesma rede.
 
 
 ## Atualização — integração GUI Plutonium (13/11/2026)
@@ -51,7 +51,7 @@
 - Inspeção do ZIP: contém `switch-homebrew/SwitchFileHub.nro` e `SwitchFileHub-SD.zip`; o pacote SD contém `switch/SwitchFileHub.nro`.
 - Tamanho do NRO: 9.383.341 bytes. Assinatura `NRO0` confirmada no deslocamento esperado.
 - SHA-256 do NRO: `93048dd07291b3177f6de49c59452875a9719633fa0fcd2e881341ce95480ec8`.
-- Cliente Android/Windows: execução [43486780996](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43486780996) ainda estava em andamento na última consulta; nenhum resultado final foi declarado.
+- Cliente Android/Windows: execução [43486780996](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43486780996) concluída com sucesso; os artifacts APK e Windows estão listados na seção de cliente abaixo.
 - Teste em Switch físico: não executado por este ambiente. Conectividade Wi-Fi, operações FTP reais, interface no console e estabilidade permanecem pendentes.
 
 ### Cliente Android e Windows — execução 43486780996
