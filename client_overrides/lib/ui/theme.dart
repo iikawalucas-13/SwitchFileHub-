@@ -44,11 +44,9 @@ ThemeData buildTheme() {
       backgroundColor: kSurface,
       indicatorColor: Color(0x338B5CF6),
     ),
-    navigationDrawerTheme: NavigationDrawerThemeData(
+    navigationDrawerTheme: const NavigationDrawerThemeData(
       backgroundColor: kSurface,
-      indicatorColor: const Color(0x338B5CF6),
-      tilePadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+      indicatorColor: Color(0x338B5CF6),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
