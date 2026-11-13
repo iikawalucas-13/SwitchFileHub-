@@ -26,6 +26,16 @@ jobs:
       - name: Baixar repositório
         uses: actions/checkout@v4
 
+      - name: Instalar dependencias da interface grafica
+        run: |
+          pacman -Sy --noconfirm switch-sdl2 switch-sdl2_ttf switch-sdl2_image switch-sdl2_gfx switch-sdl2_mixer switch-mesa switch-glad switch-glm switch-libdrm_nouveau switch-libwebp switch-libpng switch-freetype switch-bzip2 switch-libjpeg-turbo switch-opusfile switch-libopus
+
+      - name: Baixar e compilar Plutonium
+        run: |
+          cd switch-homebrew
+          git clone --depth 1 https://github.com/XorTroll/Plutonium.git Plutonium
+          make -C Plutonium
+
       - name: Compilar homebrew
         run: |
           cd switch-homebrew
