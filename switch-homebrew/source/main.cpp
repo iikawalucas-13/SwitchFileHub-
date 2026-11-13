@@ -336,7 +336,7 @@ public:
         ftp->SetColor(pu::ui::Color(150,165,195,255));
         files = pu::ui::elm::TextBlock::New(42, 230, "Carregando arquivos...");
         files->SetColor(pu::ui::Color(235,238,245,255));
-        footer = pu::ui::elm::TextBlock::New(34, 650, "A Abrir   B Voltar   Y Atualizar   X Pasta   L Renomear   R Excluir   ZL Copiar   ZR Mover   LS Transferencias   + Sair");
+        footer = pu::ui::elm::TextBlock::New(34, 650, "A Abrir   B Voltar   Y Atualizar   LS Transferencias   + Sair");
         footer->SetColor(pu::ui::Color(180,190,215,255));
         transfer_button = pu::ui::elm::Button::New(900, 640, 330, 54, "Ver transferencias", pu::ui::Color(255,255,255,255), pu::ui::Color(75,95,190,255));
         transfer_button->SetOnClick([this]() {
@@ -355,6 +355,7 @@ public:
                 files->SetText(summary);
                 transfer_button->SetContent("Ver arquivos");
             } else {
+                if (R_SUCCEEDED(mount_result)) load_directory();
                 std::string listing = "ARQUIVOS E PASTAS\n\n";
                 if (entry_count == 0) listing += "Esta pasta esta vazia.";
                 else {
@@ -442,6 +443,7 @@ public:
         layout = HubLayout::New();
         this->LoadLayout(layout);
         this->SetOnInput([&](const u64 down,const u64,const u64,const pu::ui::TouchPoint) {
+            const bool was_showing_transfers = g_show_transfers;
             if(down & HidNpadButton_Plus) { this->Close(); return; }
             if(down & HidNpadButton_X) {
                 if(g_show_transfers) g_show_transfers = false;
@@ -452,7 +454,7 @@ public:
                 else if(R_SUCCEEDED(mount_result)) go_parent();
             }
             if(down & HidNpadButton_Y) {
-                if(R_SUCCEEDED(mount_result)) load_directory();
+                if(!g_show_transfers && R_SUCCEEDED(mount_result)) load_directory();
             }
             if(down & HidNpadButton_Up && !g_show_transfers && selected > 0) selected--;
             if(down & HidNpadButton_Down && !g_show_transfers && selected < entry_count - 1) selected++;
@@ -466,6 +468,8 @@ public:
             if(down & HidNpadButton_ZR && !g_show_transfers && R_SUCCEEDED(mount_result)) move_selected();
             if(down & HidNpadButton_Minus && !g_show_transfers && R_SUCCEEDED(mount_result)) show_info();
             if(down & HidNpadButton_StickL) g_show_transfers = !g_show_transfers;
+            if(was_showing_transfers && !g_show_transfers && R_SUCCEEDED(mount_result))
+                load_directory();
             refreshText();
         });
         refreshText();
