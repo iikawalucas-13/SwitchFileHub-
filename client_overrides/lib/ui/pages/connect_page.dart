@@ -95,7 +95,7 @@ class _ConnectPageState extends State<ConnectPage> {
     var portText = _port.text.trim();
 
     // Aceita também o formato colado 192.168.1.20:5000.
-    final endpoint = RegExp(r'^(\\d{1,3}(?:\\.\\d{1,3}){3}):(\\d{1,5})$')
+    final endpoint = RegExp(r'^(\d{1,3}(?:\.\d{1,3}){3}):(\d{1,5})$')
         .firstMatch(host);
     if (endpoint != null) {
       host = endpoint.group(1)!;
@@ -120,7 +120,7 @@ class _ConnectPageState extends State<ConnectPage> {
         port == null ||
         port < 1 ||
         port > 65535) {
-      final message = RegExp(r'^\\d+$').hasMatch(host)
+      final message = RegExp(r'^\d+$').hasMatch(host)
           ? 'O IP está sem pontos. Exemplo: 192.168.1.25. Deixe a porta 5000 no campo próprio.'
           : 'Informe um IP válido (ex.: 192.168.1.25) e uma porta entre 1 e 65535.';
       showMsg(context, message);
