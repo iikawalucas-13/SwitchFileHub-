@@ -324,16 +324,16 @@ public:
     pu::ui::elm::Button::Ref files_panel, tools_panel, brand_panel;
     PU_SMART_CTOR(HubLayout)
     HubLayout() {
-        // Interface redesenhada para a tela 1280x720 do Switch.
+        // Layout compacto: textos curtos e areas separadas para evitar sobreposicao.
         this->SetBackgroundColor(pu::ui::Color(13, 16, 25, 255));
 
-        brand_panel = pu::ui::elm::Button::New(28, 20, 1224, 82,
+        brand_panel = pu::ui::elm::Button::New(28, 18, 1224, 76,
             " ", pu::ui::Color(255,255,255,255), pu::ui::Color(25,30,45,255));
         brand_panel->SetOnClick([]() {});
 
-        header = pu::ui::elm::TextBlock::New(58, 32, "SWITCH FILE HUB");
+        header = pu::ui::elm::TextBlock::New(54, 27, "SWITCH FILE HUB");
         header->SetColor(pu::ui::Color(255, 255, 255, 255));
-        subtitle = pu::ui::elm::TextBlock::New(60, 66, "CENTRAL DE ARQUIVOS  •  NINTENDO SWITCH");
+        subtitle = pu::ui::elm::TextBlock::New(56, 59, "GERENCIADOR DE ARQUIVOS");
         subtitle->SetColor(pu::ui::Color(151, 164, 187, 255));
 
         status = pu::ui::elm::Button::New(28, 120, 590, 72,
@@ -345,16 +345,16 @@ public:
             pu::ui::Color(31,48,70,255));
         ftp->SetOnClick([]() {});
 
-        path = pu::ui::elm::TextBlock::New(48, 214, "LOCAL  /  sdmc:/");
+        path = pu::ui::elm::TextBlock::New(48, 190, "MICROSD  /  sdmc:/");
         path->SetColor(pu::ui::Color(91, 194, 255, 255));
 
-        files_panel = pu::ui::elm::Button::New(28, 242, 820, 392,
+        files_panel = pu::ui::elm::Button::New(28, 218, 820, 414,
             " ", pu::ui::Color(255,255,255,255), pu::ui::Color(23,28,41,255));
         files_panel->SetOnClick([]() {});
         files = pu::ui::elm::TextBlock::New(54, 258, "ARQUIVOS\n\nCarregando...");
         files->SetColor(pu::ui::Color(239, 243, 250, 255));
 
-        tools_panel = pu::ui::elm::Button::New(868, 242, 384, 392,
+        tools_panel = pu::ui::elm::Button::New(868, 218, 384, 414,
             " ", pu::ui::Color(255,255,255,255), pu::ui::Color(23,28,41,255));
         tools_panel->SetOnClick([]() {});
         shortcuts = pu::ui::elm::TextBlock::New(894, 260,
@@ -365,7 +365,7 @@ public:
             "A ABRIR     B VOLTAR     Y ATUALIZAR                                      + SAIR");
         footer->SetColor(pu::ui::Color(126, 143, 169, 255));
 
-        transfer_button = pu::ui::elm::Button::New(930, 648, 322, 58,
+        transfer_button = pu::ui::elm::Button::New(930, 650, 322, 54,
             "VER TRANSFERENCIAS FTP", pu::ui::Color(255,255,255,255),
             pu::ui::Color(38,91,160,255));
         transfer_button->SetOnClick([this]() {
@@ -395,7 +395,7 @@ public:
     void refreshText() {
         if (R_SUCCEEDED(mount_result)) {
             char s[180];
-            snprintf(s, sizeof(s), "MICROSD  |  PRONTO  |  %d ITENS", entry_count);
+            snprintf(s, sizeof(s), "MICROSD  |  OK  |  %d ITENS", entry_count);
             layout->status->SetContent(s);
         } else {
             char s[180];
@@ -406,7 +406,7 @@ public:
         int fs = ftpServerState();
         if (fs == 2) {
             char ftp_text[180];
-            snprintf(ftp_text, sizeof(ftp_text), "FTP  |  ONLINE  |  %s:5000  |  REDE LOCAL", ftpServerIp());
+            snprintf(ftp_text, sizeof(ftp_text), "FTP  |  ONLINE  |  %s:5000", ftpServerIp());
             layout->ftp->SetContent(ftp_text);
         } else if (fs == 1) {
             layout->ftp->SetContent("FTP  |  INICIANDO SERVIDOR...");
@@ -416,7 +416,7 @@ public:
             layout->ftp->SetContent("FTP  |  DESLIGADO");
         }
 
-        layout->path->SetText(std::string("MICROSD   /   ") + current_path);
+        layout->path->SetText(std::string("PASTA: ") + current_path);
 
         std::string content;
         if (g_show_transfers) {
@@ -453,7 +453,7 @@ public:
                 for (int i = first; i < last; i++) {
                     content += (i == selected ? "  >  " : "     ");
                     content += entries[i].is_dir ? "[DIR]   " : "[FILE]  ";
-                    content += entries[i].name;
+                    content += entries[i].name[0] ? std::string(entries[i].name).substr(0, 34) : std::string("(sem nome)");
                     content += "\n";
                 }
                 char page[80];
