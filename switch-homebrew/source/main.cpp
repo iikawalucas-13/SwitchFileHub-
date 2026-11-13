@@ -321,47 +321,61 @@ class HubLayout : public pu::ui::Layout {
 public:
     pu::ui::elm::TextBlock::Ref header, subtitle, path, files, shortcuts, footer;
     pu::ui::elm::Button::Ref status, ftp, transfer_button;
+    pu::ui::elm::Button::Ref files_panel, tools_panel, brand_panel;
     PU_SMART_CTOR(HubLayout)
     HubLayout() {
-        // Visual proprio inspirado na simplicidade do hbmenu e do NX-Shell.
-        this->SetBackgroundColor(pu::ui::Color(34, 36, 45, 255));
+        // Interface redesenhada para a tela 1280x720 do Switch.
+        this->SetBackgroundColor(pu::ui::Color(13, 16, 25, 255));
 
-        header = pu::ui::elm::TextBlock::New(42, 24, "Switch File Hub");
+        brand_panel = pu::ui::elm::Button::New(28, 20, 1224, 82,
+            " ", pu::ui::Color(255,255,255,255), pu::ui::Color(25,30,45,255));
+        brand_panel->SetOnClick([]() {});
+
+        header = pu::ui::elm::TextBlock::New(58, 32, "SWITCH FILE HUB");
         header->SetColor(pu::ui::Color(255, 255, 255, 255));
-        subtitle = pu::ui::elm::TextBlock::New(44, 70, "GERENCIADOR DE ARQUIVOS  /  NINTENDO SWITCH");
-        subtitle->SetColor(pu::ui::Color(192, 192, 195, 255));
+        subtitle = pu::ui::elm::TextBlock::New(60, 66, "CENTRAL DE ARQUIVOS  •  NINTENDO SWITCH");
+        subtitle->SetColor(pu::ui::Color(151, 164, 187, 255));
 
-        status = pu::ui::elm::Button::New(42, 116, 410, 62,
-            "MICROSD  |  VERIFICANDO...", pu::ui::Color(255,255,255,255),
-            pu::ui::Color(55,59,70,255));
+        status = pu::ui::elm::Button::New(28, 120, 590, 72,
+            "MICROSD  |  VERIFICANDO...", pu::ui::Color(235,245,255,255),
+            pu::ui::Color(31,48,70,255));
         status->SetOnClick([]() {});
-        ftp = pu::ui::elm::Button::New(470, 116, 768, 62,
-            "FTP  |  DESLIGADO", pu::ui::Color(255,255,255,255),
-            pu::ui::Color(55,59,70,255));
+        ftp = pu::ui::elm::Button::New(638, 120, 614, 72,
+            "FTP  |  DESLIGADO", pu::ui::Color(235,245,255,255),
+            pu::ui::Color(31,48,70,255));
         ftp->SetOnClick([]() {});
 
-        path = pu::ui::elm::TextBlock::New(48, 210, "MICROSD   /   sdmc:/");
-        path->SetColor(pu::ui::Color(96, 204, 204, 255));
+        path = pu::ui::elm::TextBlock::New(48, 214, "LOCAL  /  sdmc:/");
+        path->SetColor(pu::ui::Color(91, 194, 255, 255));
 
-        files = pu::ui::elm::TextBlock::New(54, 254, "Seus arquivos\n\nCarregando...");
-        files->SetColor(pu::ui::Color(245, 246, 248, 255));
+        files_panel = pu::ui::elm::Button::New(28, 242, 820, 392,
+            " ", pu::ui::Color(255,255,255,255), pu::ui::Color(23,28,41,255));
+        files_panel->SetOnClick([]() {});
+        files = pu::ui::elm::TextBlock::New(54, 258, "ARQUIVOS\n\nCarregando...");
+        files->SetColor(pu::ui::Color(239, 243, 250, 255));
 
-        shortcuts = pu::ui::elm::TextBlock::New(900, 254,
-            "NAVEGACAO\n\nA   Abrir selecionado\nB   Pasta anterior\nY   Atualizar\n\nACOES\n\nX   Nova pasta\nL   Renomear\nR   Excluir\nZL  Copiar\nZR  Mover\n-   Detalhes\n\nCONEXAO\n\nUse o IP do cartao FTP\nno celular ou computador,\nna mesma rede Wi-Fi.");
-        shortcuts->SetColor(pu::ui::Color(192, 192, 195, 255));
+        tools_panel = pu::ui::elm::Button::New(868, 242, 384, 392,
+            " ", pu::ui::Color(255,255,255,255), pu::ui::Color(23,28,41,255));
+        tools_panel->SetOnClick([]() {});
+        shortcuts = pu::ui::elm::TextBlock::New(894, 260,
+            "ATALHOS DO CONTROLE\n\nA   Abrir item\nB   Voltar pasta\nY   Atualizar lista\n\nGERENCIAR\n\nX   Criar pasta\nL   Renomear\nR   Excluir\nZL  Copiar arquivo\nZR  Mover arquivo\n-   Informacoes");
+        shortcuts->SetColor(pu::ui::Color(181, 194, 215, 255));
 
-        footer = pu::ui::elm::TextBlock::New(44, 670,
-            "A  ABRIR     B  VOLTAR     Y  ATUALIZAR                                      +  SAIR");
-        footer->SetColor(pu::ui::Color(160, 165, 176, 255));
+        footer = pu::ui::elm::TextBlock::New(40, 658,
+            "A ABRIR     B VOLTAR     Y ATUALIZAR                                      + SAIR");
+        footer->SetColor(pu::ui::Color(126, 143, 169, 255));
 
-        transfer_button = pu::ui::elm::Button::New(944, 620, 294, 58,
-            "TRANSFERENCIAS", pu::ui::Color(24, 36, 39, 255),
-            pu::ui::Color(96, 204, 204, 255));
+        transfer_button = pu::ui::elm::Button::New(930, 648, 322, 58,
+            "VER TRANSFERENCIAS FTP", pu::ui::Color(255,255,255,255),
+            pu::ui::Color(38,91,160,255));
         transfer_button->SetOnClick([this]() {
             g_show_transfers = !g_show_transfers;
-            transfer_button->SetContent(g_show_transfers ? "VOLTAR AOS ARQUIVOS" : "TRANSFERENCIAS");
+            transfer_button->SetContent(g_show_transfers ? "VOLTAR AOS ARQUIVOS" : "VER TRANSFERENCIAS FTP");
         });
 
+        this->Add(brand_panel);
+        this->Add(files_panel);
+        this->Add(tools_panel);
         this->Add(header);
         this->Add(subtitle);
         this->Add(status);
