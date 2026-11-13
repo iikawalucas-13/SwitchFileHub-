@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <fcntl.h>
 
 #define FTP_PORT 5000
 #define FTP_LINE 1024
@@ -337,11 +338,17 @@ static void server_main(void *unused) {
     if (bind(listen_fd,(struct sockaddr*)&addr,sizeof(addr))<0 || listen(listen_fd,FTP_MAX_CLIENTS)<0) {
         close(listen_fd); listen_fd=-1; server_state=-1; return;
     }
+    int flags = fcntl(listen_fd, F_GETFL, 0);
+    if (flags >= 0) fcntl(listen_fd, F_SETFL, flags | O_NONBLOCK);
     server_state=2;
     while (server_running) {
-        int client=accept(listen_fd,NULL,NULL);
-        if (client<0) { if (!server_running) break; continue; }
         for (int i=0;i<FTP_MAX_CLIENTS;i++) reap_worker(&workers[i]);
+        int client=accept(listen_fd,NULL,NULL);
+        if (client<0) {
+            if (!server_running) break;
+            svcSleepThread(10000000);
+            continue;
+        }
         FtpWorker *slot=NULL;
         for (int i=0;i<FTP_MAX_CLIENTS;i++) if (!workers[i].in_use) { slot=&workers[i]; break; }
         if (!slot) {
