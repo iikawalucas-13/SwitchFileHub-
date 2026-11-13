@@ -340,7 +340,7 @@ static void draw_ui(void) {
     }
     printf("\n  A Abrir | B Voltar | Y Atualizar | X Nova pasta\n");
     printf("  L Renomear | R Excluir | ZL Copiar arquivo | ZR Mover arquivo\n");
-    printf("  R3 Informacoes | + Sair\n");
+    printf("  - Informacoes | + Sair\n");
     consoleUpdate(NULL);
 }
 
@@ -371,7 +371,7 @@ int main(int argc, char **argv) {
             if (down & HidNpadButton_R) delete_selected();
             if (down & HidNpadButton_ZL) copy_selected();
             if (down & HidNpadButton_ZR) move_selected();
-            if (down & HidNpadButton_R3) show_info();
+            if (down & HidNpadButton_Minus) show_info();
         }
         draw_ui();
     }
