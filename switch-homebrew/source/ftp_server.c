@@ -83,8 +83,7 @@ static bool ftp_path(const char *cwd, const char *input, char *out, size_t cap) 
 static bool ftp_virtual_path(const char *cwd, const char *input, char *out, size_t cap) {
     char disk[FTP_LINE];
     if (!ftp_path(cwd, input, disk, sizeof(disk))) return false;
-    const char *p = disk + 5; /* after sdmc: */
-    if (snprintf(out, cap, "%s", p) >= (int)cap) return false;
+    if (snprintf(out, cap, "%s", disk) >= (int)cap) return false;
     return true;
 }
 
@@ -136,7 +135,8 @@ static void list_directory(int control, int *data_listener, const char *path, bo
     while ((item = readdir(dir)) != NULL) {
         if (!strcmp(item->d_name, ".") || !strcmp(item->d_name, "..")) continue;
         struct stat st;
-        if (snprintf(full, sizeof(full), "%s/%s", path, item->d_name) >= (int)sizeof(full)) continue;
+        if (snprintf(full, sizeof(full), "%s%s%s", path,
+            path[strlen(path)-1] == '/' ? "" : "/", item->d_name) >= (int)sizeof(full)) continue;
         if (stat(full, &st) != 0) continue;
         if (mlsd) {
             snprintf(line, sizeof(line), "type=%s;size=%lld;modify=20260101000000; %s\r\n",
