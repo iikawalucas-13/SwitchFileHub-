@@ -2,13 +2,16 @@
 
 ## Estado desta versão
 
-Esta pasta contém o cliente homebrew nativo do Switch. A versão 0.1.1 oferece somente:
-- montagem do microSD;
-- navegação entre diretórios;
-- atualização da listagem;
-- mensagens visíveis quando a montagem ou abertura de uma pasta falha.
+O NRO contém:
+- navegação e gerenciamento local do microSD;
+- criação de pastas, renomeação e exclusão;
+- cópia e movimentação de arquivos dentro do microSD;
+- servidor FTP integrado ao próprio homebrew, iniciado automaticamente na porta TCP 5000;
+- suporte FTP passivo, MLSD/LIST, STOR/RETR e operações básicas de diretório/arquivo.
 
-**Ainda não oferece transferência de arquivos, servidor FTP, cliente MTP ou integração com o DBI.** A compilação bem-sucedida do NRO confirma apenas que o binário foi gerado; não confirma funcionamento em um console real.
+**Não é necessário iniciar o ftpd separado.** Mantenha o Switch File Hub aberto durante a conexão. O acesso FTP desta versão é anônimo e sem criptografia; use somente em rede local confiável.
+
+A compilação do NRO pelo GitHub Actions valida a geração do binário, mas não substitui teste em um Nintendo Switch físico. O teste em hardware permanece pendente.
 
 ## Como compilar
 
@@ -19,44 +22,43 @@ cd switch-homebrew
 make
 ```
 
-O resultado esperado é `SwitchFileHub.nro`. O workflow do GitHub Actions verifica se o arquivo não está vazio e se contém a assinatura `NRO0` no cabeçalho.
+O resultado esperado é `SwitchFileHub.nro`. O workflow verifica se o arquivo não está vazio e se contém a assinatura `NRO0`.
 
 ## Instalar pelo cartão SD
 
-O pacote `SwitchFileHub-SD.zip` publicado pelo GitHub Actions já contém a estrutura:
-
-```
-switch/
-└── SwitchFileHub.nro
-```
-
-Extraia o conteúdo na raiz do microSD, mantendo a pasta `switch`. O caminho final recomendado é:
+Extraia o conteúdo de `SwitchFileHub-SD.zip` na raiz do microSD. O caminho final recomendado é:
 
 ```
 /switch/SwitchFileHub.nro
 ```
 
-Também é válido usar uma subpasta com o mesmo nome do executável:
+## Usar o servidor FTP integrado
 
-```
-/switch/SwitchFileHub/SwitchFileHub.nro
-```
+1. Abra o NRO pelo Homebrew Menu.
+2. Confira na tela o estado do FTP e o endereço IP (porta 5000).
+3. No aplicativo Android/Windows, procure o Switch na rede ou informe o IP e a porta 5000.
+4. Deixe usuário e senha em branco nesta versão.
+5. Faça as transferências e mantenha o NRO aberto até terminar.
 
-O Homebrew Menu procura arquivos `.nro` dentro de `/switch`. A ausência de ícone pode afetar a aparência da entrada, mas não é, por si só, prova de que o executável não foi encontrado. Se o aplicativo não aparecer, confira primeiro o caminho e se o Homebrew Menu está lendo o mesmo microSD.
+Se o IP não aparecer no NRO, consulte o IP do Switch nas configurações de Internet ou use a descoberta automática no cliente.
 
-## Controles
+## Controles locais
 
 - Direcional para cima/baixo: selecionar item.
 - A: abrir pasta.
 - B: voltar uma pasta.
 - Y: atualizar listagem.
-- +: sair.
+- X: criar pasta.
+- L: renomear.
+- R: excluir (confirmação por texto).
+- ZL: copiar arquivo.
+- ZR: mover arquivo.
+- -: informações.
+- +: sair (encerra o servidor FTP).
 
-## Próximas etapas
+## Limitações importantes
 
-1. Testar a navegação em um Switch real e registrar a mensagem de estado exibida.
-2. Definir uma arquitetura de comunicação compatível entre o cliente desktop/mobile e o console.
-3. Implementar transferências com validação de caminhos, confirmação de sobrescrita e tratamento de interrupções.
-4. Testar cada operação em hardware antes de declarar a versão pronta.
-
-O cliente Flutter documentado em `MANUAL_SWITCH.md` usa um servidor FTP separado (por exemplo, o homebrew ftpd). Esse servidor não é iniciado por este NRO.
+- Uma sessão FTP por vez.
+- FTP anônimo e sem criptografia; não exponha a porta 5000 à internet.
+- O NRO precisa permanecer aberto.
+- O teste em console físico ainda é necessário para confirmar rede e operações de arquivos.
