@@ -28,12 +28,14 @@ jobs:
           Expand-Archive -LiteralPath $zip -DestinationPath "$env:RUNNER_TEMP\sfh-source" -Force
           $pubspec = Get-ChildItem "$env:RUNNER_TEMP\sfh-source" -Filter pubspec.yaml -Recurse | Select-Object -First 1
           if (!$pubspec) { throw 'pubspec.yaml não foi encontrado dentro do ZIP.' }
-          "PROJECT_DIR=$($pubspec.Directory.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
-          Write-Host "Projeto encontrado em $($pubspec.Directory.FullName)"
+          $projectDir = $pubspec.Directory.FullName
+          "PROJECT_DIR=$projectDir" | Out-File -FilePath $env:GITHUB_ENV -Append
+          $env:PROJECT_DIR = $projectDir
+          Write-Host "Projeto encontrado em $projectDir"
           $overlay = Join-Path $env:GITHUB_WORKSPACE 'client_overrides\lib'
           if (Test-Path $overlay) {
-            New-Item -ItemType Directory -Force -Path (Join-Path $env:PROJECT_DIR 'lib') | Out-Null
-            Copy-Item -Path "$overlay\*" -Destination (Join-Path $env:PROJECT_DIR 'lib') -Recurse -Force
+            New-Item -ItemType Directory -Force -Path (Join-Path $projectDir 'lib') | Out-Null
+            Copy-Item -Path "$overlay\*" -Destination (Join-Path $projectDir 'lib') -Recurse -Force
           }
 
       - name: Instalar Flutter
