@@ -342,10 +342,10 @@ public:
         transfer_button->SetOnClick([this]() {
             g_show_transfers = !g_show_transfers;
             if (g_show_transfers) {
-                files->SetText("TRANSFERENCIAS\\n\\nO servidor FTP permite enviar e receber arquivos pela rede local.\\nEstado: consulte a linha FTP acima.\\n\\nO progresso detalhado sera exibido quando o registro for integrado.");
+                files->SetText("TRANSFERENCIAS\n\nO servidor FTP permite enviar e receber arquivos pela rede local.\nEstado: consulte a linha FTP acima.\n\nO progresso detalhado sera exibido quando o registro for integrado.");
                 transfer_button->SetContent("Ver arquivos");
             } else {
-                files->SetText("ARQUIVOS E PASTAS\\n\\nPressione Y para atualizar a listagem.");
+                files->SetText("ARQUIVOS E PASTAS\n\nPressione Y para atualizar a listagem.");
                 transfer_button->SetContent("Ver transferencias");
             }
         });
@@ -380,13 +380,13 @@ public:
             ftpServerGetStats(&stats);
             char transfer_summary[512];
             snprintf(transfer_summary, sizeof(transfer_summary),
-                "TRANSFERENCIAS FTP - ESTA SESSAO\\n\\n"
-                "Estado do servidor: %s\\n"
-                "Transferencias ativas: %u\\n"
-                "Concluidas: %llu\\n"
-                "Com falha: %llu\\n\\n"
-                "Recebido no Switch: %llu bytes\\n"
-                "Enviado pelo Switch: %llu bytes\\n\\n"
+                "TRANSFERENCIAS FTP - ESTA SESSAO\n\n"
+                "Estado do servidor: %s\n"
+                "Transferencias ativas: %u\n"
+                "Concluidas: %llu\n"
+                "Com falha: %llu\n\n"
+                "Recebido no Switch: %llu bytes\n"
+                "Enviado pelo Switch: %llu bytes\n\n"
                 "As estatisticas reiniciam ao fechar o aplicativo.",
                 fs == 2 ? "ATIVO" : (fs < 0 ? "ERRO" : "INATIVO"),
                 (unsigned int)stats.active,
