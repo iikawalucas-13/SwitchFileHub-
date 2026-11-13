@@ -357,12 +357,12 @@ public:
         tools_panel = pu::ui::elm::Button::New(868, 218, 384, 414,
             " ", pu::ui::Color(255,255,255,255), pu::ui::Color(23,28,41,255));
         tools_panel->SetOnClick([]() {});
-        shortcuts = pu::ui::elm::TextBlock::New(894, 260,
-            "ATALHOS DO CONTROLE\n\nA   Abrir item\nB   Voltar pasta\nY   Atualizar lista\n\nGERENCIAR\n\nX   Criar pasta\nL   Renomear\nR   Excluir\nZL  Copiar arquivo\nZR  Mover arquivo\n-   Informacoes");
+        shortcuts = pu::ui::elm::TextBlock::New(894, 238,
+            "CONTROLES\n\nA   Abrir item\nB   Voltar pasta\nY   Atualizar\n\nACOES\n\nX   Nova pasta\nL   Renomear\nR   Excluir\nZL  Copiar\nZR  Mover\n-   Detalhes");
         shortcuts->SetColor(pu::ui::Color(181, 194, 215, 255));
 
         footer = pu::ui::elm::TextBlock::New(40, 658,
-            "A ABRIR     B VOLTAR     Y ATUALIZAR                                      + SAIR");
+            "A ABRIR     B VOLTAR     Y ATUALIZAR     + SAIR");
         footer->SetColor(pu::ui::Color(126, 143, 169, 255));
 
         transfer_button = pu::ui::elm::Button::New(930, 650, 322, 54,
@@ -462,7 +462,7 @@ public:
             }
             content += "\n\n";
             content += directory_status;
-            layout->shortcuts->SetText("NAVEGACAO\n\nA   Abrir selecionado\nB   Pasta anterior\nY   Atualizar\n\nACOES\n\nX   Nova pasta\nL   Renomear\nR   Excluir\nZL  Copiar\nZR  Mover\n-   Detalhes\n\nCONEXAO\n\nAcesse pelo celular ou\ncomputador usando o IP\ndo cartao FTP.");
+            layout->shortcuts->SetText("CONTROLES\n\nA   Abrir item\nB   Voltar pasta\nY   Atualizar\n\nACOES\n\nX   Nova pasta\nL   Renomear\nR   Excluir\nZL  Copiar\nZR  Mover\n-   Detalhes\n\nFTP\n\nIP mostrado no cartao\nPorta: 5000");
         }
         layout->files->SetText(content);
     }
