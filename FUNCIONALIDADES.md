@@ -1,11 +1,27 @@
-# Funcionalidades implementadas no código (não validadas por compilação — ver RELATORIO_TESTES.md)
+# Funcionalidades no código — Switch File Hub
 
-**Conexão FTP:** IP, porta, usuário/senha opcionais; testar conexão; conectar/desconectar; MLSD com fallback para LIST; reconexão automática em falha de rede (restaura a pasta); novas tentativas de transferência (até 2).
-**Arquivos do Switch:** navegar, listar com tamanhos, criar pasta, renomear, excluir (arquivos e pastas, com confirmação), seleção múltipla.
-**Transferências:** envio e download de arquivos e pastas inteiras; em fluxo (sem carregar na memória); fila com até 3 simultâneas (conexão própria por transferência); progresso, velocidade, tempo restante; cancelamento (remove parcial); download via arquivo `.sfhpart` renomeado só ao concluir; nunca substitui sem perguntar (substituir / pular existentes / cancelar).
-**Windows:** painel do computador (unidades, navegar, criar/renomear/excluir com confirmação), arrastar e soltar, escolher destino de download.
-**Android:** envio por seletor de arquivos/pasta, download para pasta do app (ou escolhida), layout com menu lateral recolhível.
-**Detecção automática:** botão "Procurar Switch na rede" varre a sub-rede /24 privada na porta escolhida e lista servidores FTP (banner 220).
-**Histórico** persistente (500 itens); **configurações** persistentes (a senha nunca é salva).
-**Segurança:** validação de nomes (FAT32/exFAT), bloqueio de `..` e CR/LF em comandos, download restrito à pasta escolhida, senha fora de logs.
-**Windows↔Android:** via microSD do Switch como intermediário, claramente identificado (tela Dispositivos).
+> As funcionalidades descritas abaixo estão presentes no código-fonte. A validação depende dos workflows e de testes em dispositivos reais; consulte `RELATORIO_TESTES.md`.
+
+## Nintendo Switch — NRO
+- Navegação e gerenciamento local do microSD.
+- Criar pastas, renomear, excluir, copiar e mover arquivos.
+- Servidor FTP iniciado pelo próprio NRO, sem abrir um homebrew ftpd separado.
+- Porta TCP 5000; FTP passivo (PASV/EPSV); sessão anônima.
+- Listagem MLSD/LIST, PWD/CWD/CDUP, SIZE, STOR/RETR, MKD, DELE, RMD e RNFR/RNTO.
+- Upload para arquivo temporário, com renomeação ao concluir; caminhos limitados a `sdmc:/`.
+
+## Cliente Flutter — Android e Windows
+- Conexão por IP e porta, teste de conexão e desconexão.
+- Descoberta automática de servidores FTP na sub-rede privada /24 pela porta escolhida (banner 220).
+- MLSD com fallback para LIST; modo passivo FTP; upload/download em fluxo.
+- Reconexão em falha de rede, progresso, velocidade, tempo restante, cancelamento e histórico.
+- Gerenciamento remoto: navegar, criar pasta, renomear, excluir e transferir arquivos/pastas.
+- Windows: navegação no computador e arrastar/soltar.
+- Android: seletor de arquivos e downloads para pasta do aplicativo ou destino escolhido.
+
+## Limitações
+- FTP anônimo e sem criptografia; use somente em rede local confiável.
+- NRO precisa permanecer aberto; uma sessão FTP por vez.
+- Não há FTPS/SFTP nem retomada de transferência interrompida.
+- A descoberta depende de dispositivos na mesma sub-rede privada /24.
+- Compatibilidade e estabilidade precisam ser verificadas em Switch físico, Android e Windows.
