@@ -9,4 +9,4 @@ O NRO na branch `feat/switch-gui-plutonium` já compila com interface Plutonium 
 - Limitações: `LIMITACOES.md`
 - Relatório de testes: `RELATORIO_TESTES.md`
 
-**Status:** compilação do NRO validada no GitHub Actions (execução 43486919603). O teste no console físico ainda está pendente. O cliente Android/Windows tem workflow próprio em execução; não confunda build com teste de conexão real. FTP é anônimo e sem criptografia nesta versão; use somente em rede local confiável.
+**Status:** compilação do NRO validada no GitHub Actions (execução 43486919603). O cliente Android e o Windows x64 também tiveram compilação e testes automatizados aprovados (execução 43486780996). O teste de conexão e uso em dispositivos físicos ainda está pendente; não confunda build com teste real. FTP é anônimo e sem criptografia nesta versão; use somente em rede local confiável.
