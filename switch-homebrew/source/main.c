@@ -309,9 +309,9 @@ static void draw_ui(void) {
     printf("  |                    GERENCIADOR DO MICROSD                        |\n");
     printf("  +------------------------------------------------------------------+\n");
     if (R_SUCCEEDED(mount_result))
-        printf("  MICROSD [ CONECTADO ]       ITENS: %-4d       VERSAO: 0.2.0\n", entry_count);
+        printf("  MICROSD [ CONECTADO ]       ITENS: %-4d       VERSAO: 0.3.0\n", entry_count);
     else
-        printf("  MICROSD [ ERRO ]            VERSAO: 0.2.0\n");
+        printf("  MICROSD [ ERRO ]            VERSAO: 0.3.0\n");
     printf("  LOCAL: %.62s\n", current_path);
     printf("  STATUS: %.65s\n", directory_status);
     int ftp_state = ftpServerState();
