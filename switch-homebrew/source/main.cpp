@@ -342,10 +342,34 @@ public:
         transfer_button->SetOnClick([this]() {
             g_show_transfers = !g_show_transfers;
             if (g_show_transfers) {
-                files->SetText("TRANSFERENCIAS\n\nO servidor FTP permite enviar e receber arquivos pela rede local.\nEstado: consulte a linha FTP acima.\n\nO progresso detalhado sera exibido quando o registro for integrado.");
+                FtpTransferStats stats = {};
+                ftpServerGetStats(&stats);
+                char summary[512];
+                snprintf(summary, sizeof(summary),
+                    "TRANSFERENCIAS FTP - ESTA SESSAO\n\nAtivas: %u\nConcluidas: %llu\nFalhas: %llu\n\nRecebido: %llu bytes\nEnviado: %llu bytes\n\nEstatisticas reiniciam ao fechar o app.",
+                    (unsigned int)stats.active,
+                    (unsigned long long)stats.completed,
+                    (unsigned long long)stats.failed,
+                    (unsigned long long)stats.bytes_received,
+                    (unsigned long long)stats.bytes_sent);
+                files->SetText(summary);
                 transfer_button->SetContent("Ver arquivos");
             } else {
-                files->SetText("ARQUIVOS E PASTAS\n\nPressione Y para atualizar a listagem.");
+                std::string listing = "ARQUIVOS E PASTAS\n\n";
+                if (entry_count == 0) listing += "Esta pasta esta vazia.";
+                else {
+                    int first = (selected / PAGE_SIZE) * PAGE_SIZE;
+                    int last = std::min(first + PAGE_SIZE, entry_count);
+                    for (int i = first; i < last; i++) {
+                        listing += (i == selected ? "> " : "  ");
+                        listing += entries[i].is_dir ? "[PASTA] " : "[ARQ.]  ";
+                        listing += entries[i].name;
+                        listing += "\n";
+                    }
+                }
+                listing += "\n";
+                listing += directory_status;
+                files->SetText(listing);
                 transfer_button->SetContent("Ver transferencias");
             }
         });
