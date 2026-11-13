@@ -1,26 +1,75 @@
-# Relatório de testes — Switch File Hub 1.0
+# Relatório de testes — Switch File Hub
 
-## Executado neste ambiente
-- Leitura e análise completa do ZIP original (586 linhas em `main.dart`).
-- Conferência de balanceamento de chaves/parênteses nos 17 arquivos Dart.
-- Conferência em Python das expressões regulares de MLSD/LIST/PASV usadas pelo cliente FTP.
+## Resultado dos workflows GitHub Actions
 
-## NÃO executado (ambiente sem Flutter/Dart e sem rede para instalar)
-- `flutter pub get`, `flutter analyze`, `flutter test`
-- Compilação Windows (`.exe`) e Android (`.apk`), geração do instalador
-- Testes de integração contra servidor FTP (existem em `test/integration`, rodam no CI com pyftpdlib)
-- Conexão com Nintendo Switch real
+### NRO Nintendo Switch
+- Workflow: [Build Switch Homebrew NRO — execução 43478119888](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43478119888)
+- Commit validado: [036989b95d10d46a09fe3f515800c5ea11515be3](https://github.com/iikawalucas-13/SwitchFileHub-/commit/036989b95d10d46a09fe3f515800c5ea11515be3)
+- Job **Nintendo Switch NRO**: sucesso.
+- Log confirma compilação de `ftp_server.c`, assinatura `NRO0` e upload do artifact.
+- Artifact: [SwitchFileHub-Nintendo-Switch.zip](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43478119888/artifacts/14064206994) (ID 14064206994).
 
-## Testes escritos (para rodar no CI ou localmente)
-| Arquivo | Cobre |
-|---|---|
-| `test/format_test.dart` | validação de nomes/caminhos, anti-traversal, tamanhos/ETA, parsers MLSD/LIST, JSON do histórico |
-| (em `format_test.dart`) | cálculo da faixa de IPs da detecção automática |
-| `test/widget_test.dart` | abertura do app, navegação Início → Conectar Switch |
-| `test/integration/ftp_integration_test.dart` | conexão, listagem, criar pasta, renomear, excluir, upload/download de 20 MB com comparação byte a byte, não-substituição silenciosa, cancelamento de upload de 400 MB com remoção do parcial, conexão recusada |
+### Cliente Flutter Android e Windows
+- Workflow: [Build Switch File Hub — execução 43477269728](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43477269728)
+- Commit validado: [c40ec328f1c7110bcd1668953f6877cf050d5c15](https://github.com/iikawalucas-13/SwitchFileHub-/commit/c40ec328f1c7110bcd1668953f6877cf050d5c15)
+- Jobs **Android APK** e **Windows 11 x64**: sucesso.
+- `flutter analyze` concluiu sem erros fatais, mas registrou avisos/informações não fatais (incluindo um import não utilizado e avisos de APIs Flutter depreciadas).
+- Testes de formato/unidade: 14 aprovados. Teste de widget: 1 aprovado.
+- APK: [SwitchFileHub-Android-APK](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43477269728/artifacts/14063797023) (ID 14063797023).
+- Windows x64: [SwitchFileHub-Windows-x64](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43477269728/artifacts/14063642032) (ID 14063642032).
 
-## Mudança de arquitetura que você deve saber
-O pacote `ftpconnect` foi **removido**: sua documentação pública não confirmou a API que o protótipo usava e ele não permite cancelar transferências. Foi substituído por um cliente FTP próprio (`ftp_client.dart`). Isso é código novo e ainda sem execução.
+## Código integrado no NRO
+- O NRO inicia servidor FTP no próprio homebrew, na porta TCP 5000; não é necessário abrir um ftpd separado.
+- Implementados PASV/EPSV, login anônimo, MLSD/LIST, PWD/CWD/CDUP, SIZE, STOR/RETR, MKD, DELE, RMD e RNFR/RNTO.
+- O servidor está configurado para até quatro sessões de controle simultâneas, compatíveis com a sessão de navegação e as transferências separadas do cliente.
+- Caminhos remotos são limitados ao dispositivo `sdmc:/`; segmentos `..` e prefixos de dispositivo são rejeitados.
+- Upload é escrito em arquivo temporário e publicado por renomeação após a transferência.
 
-## Próximo passo
-Rodar o workflow `build.yml` (ou `build_windows.bat`), corrigir o que o `flutter analyze`/testes apontarem e testar com o Switch real (o ftpd aberto na rede local).
+## O que os testes CI NÃO comprovam
+- O NRO foi compilado e validado quanto à assinatura do arquivo, mas não foi executado em Nintendo Switch físico.
+- O cliente Flutter foi compilado para Android e Windows, mas o CI não conectou esses clientes ao NRO integrado.
+- Os testes automatizados do cliente verificam formatos, parsers e widgets; não são um teste de rede com o servidor NRO.
+- Permanecem pendentes no hardware: conexão e descoberta na rede local, listagem, upload, download, criação/renomeação/exclusão, quatro sessões, cancelamento, desconexão, suspensão e estabilidade do microSD.
+
+## Limitações e segurança
+- FTP anônimo e sem criptografia. Use somente em rede local confiável; não encaminhe a porta 5000 à internet.
+- O NRO precisa permanecer aberto durante a conexão.
+- Não há FTPS/SFTP nem retomada de transferência interrompida.
+- O limite de quatro sessões e a identificação do IP precisam ser confirmados no Switch físico.
+
+## Conclusão
+**Compilações CI do NRO, Android e Windows aprovadas; testes automatizados Flutter aprovados.** A validação funcional final continua pendente porque exige executar o NRO em um Switch físico e conectar os clientes à mesma rede.
+
+
+## Atualização — integração GUI Plutonium (13/11/2026)
+
+- Branch: `feat/switch-gui-plutonium`.
+- Commit do NRO: `8224651d06516cc095bf307fe38fa70fa2e0ef7e`.
+- Workflow NRO: [execução 43486919603](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43486919603) — job Nintendo Switch NRO concluído com sucesso.
+- Etapas aprovadas: compilação do Plutonium, compilação do homebrew, validação da assinatura `NRO0`, montagem do pacote para microSD e publicação do artifact.
+- Artifact: [SwitchFileHub-Nintendo-Switch.zip](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43486919603) (ID 14067243923).
+- Inspeção do ZIP: contém `switch-homebrew/SwitchFileHub.nro` e `SwitchFileHub-SD.zip`; o pacote SD contém `switch/SwitchFileHub.nro`.
+- Tamanho do NRO: 9.383.341 bytes. Assinatura `NRO0` confirmada no deslocamento esperado.
+- SHA-256 do NRO: `93048dd07291b3177f6de49c59452875a9719633fa0fcd2e881341ce95480ec8`.
+- Cliente Android/Windows: execução [43486780996](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43486780996) concluída com sucesso; os artifacts APK e Windows estão listados na seção de cliente abaixo.
+- Teste em Switch físico: não executado por este ambiente. Conectividade Wi-Fi, operações FTP reais, interface no console e estabilidade permanecem pendentes.
+
+### Cliente Android e Windows — execução 43486780996
+
+- Workflow [Build Switch File Hub](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43486780996) — ambos os jobs concluídos com sucesso.
+- Windows 11 x64: compilação Release aprovada; artifact [SwitchFileHub-Windows-x64](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43486780996/artifacts/14067478694), ID 14067478694. O ZIP interno contém EXE, DLLs e pasta `data`.
+- Android: compilação `app-release.apk` aprovada; artifact [SwitchFileHub-Android-APK](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43486780996/artifacts/14066974813), ID 14066974813. APK extraído e estrutura ZIP validada.
+- `flutter analyze` concluiu sem erros fatais. Testes registrados no log: 14 testes de unidade/formato e 1 teste de widget aprovados.
+- Avisos observados: plugin `desktop_drop` usa Kotlin Gradle Plugin e poderá exigir migração em versões futuras do Flutter; Android também registrou mensagem do watcher de diretório já monitorado, mas a compilação terminou com sucesso.
+- Esses resultados validam compilação e testes automatizados, não execução do APK em telefone nem do EXE em outro PC.
+
+### NRO atualizado após ajustes de interface — execução 43487466206
+
+- Commit validado: `635c1b0bb099a6e1c2ae1f1e8e39fc039abf1048`.
+- Workflow [43487466206](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43487466206): job Nintendo Switch NRO e todas as etapas concluídas com sucesso.
+- Artifact final do NRO e pacote SD: [SwitchFileHub-Nintendo-Switch](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43487466206/artifacts/14067463867), ID 14067463867.
+- ZIP e ZIP interno do cartão SD foram testados; o pacote contém `switch/SwitchFileHub.nro`.
+- Assinatura `NRO0` confirmada; NRO com 9.383.341 bytes.
+- SHA-256 do NRO desta compilação: `201a8ad07ba7504da4afc32cf9fd3a574ae3cae2cacbf90656d9d089d061d620`.
+- O painel de transferências agora mostra contadores da sessão; ao retornar para arquivos, a listagem é recarregada para refletir alterações feitas via FTP. O rodapé foi reduzido para evitar sobreposição com o botão na tela.
+- Continua pendente apenas a validação no hardware real: iniciar o NRO no console, conectar Android/Windows pela rede e testar operações FTP.

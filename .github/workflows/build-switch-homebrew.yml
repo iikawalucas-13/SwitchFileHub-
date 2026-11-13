@@ -2,6 +2,11 @@ name: Build Switch Homebrew NRO
 
 on:
   push:
+    branches: [main, fix/switch-browser-diagnostics, feat/switch-logo-nro, feat/switch-gui-plutonium]
+    paths:
+      - "switch-homebrew/**"
+      - ".github/workflows/build-switch-homebrew.yml"
+  pull_request:
     branches: [main]
     paths:
       - "switch-homebrew/**"
@@ -21,15 +26,42 @@ jobs:
       - name: Baixar repositório
         uses: actions/checkout@v4
 
+      # A imagem oficial devkitpro/devkita64 já inclui as portlibs do Switch.
+      # Não executar dkp-pacman no CI: o servidor de pacotes pode responder 403.
+      - name: Baixar e compilar Plutonium
+        run: |
+          cd switch-homebrew
+          git clone --depth 1 https://github.com/XorTroll/Plutonium.git Plutonium
+          make -C Plutonium
+
       - name: Compilar homebrew
         run: |
           cd switch-homebrew
           make
 
-      - name: Publicar arquivo NRO
+      - name: Validar arquivo NRO
+        run: |
+          test -s switch-homebrew/SwitchFileHub.nro
+          magic="$(dd if=switch-homebrew/SwitchFileHub.nro bs=1 skip=16 count=4 2>/dev/null)"
+          if [ "$magic" != "NRO0" ]; then
+            echo "Erro: o arquivo gerado não possui a assinatura NRO0 esperada."
+            exit 1
+          fi
+          echo "NRO válido: assinatura NRO0 encontrada."
+
+      - name: Preparar pacote para o cartão SD
+        run: |
+          mkdir -p package/switch
+          cp switch-homebrew/SwitchFileHub.nro package/switch/SwitchFileHub.nro
+          cd package
+          zip -r ../SwitchFileHub-SD.zip switch
+
+      - name: Publicar NRO e pacote para SD
         uses: actions/upload-artifact@v4
         with:
-          name: SwitchFileHub-Nintendo-Switch-NRO
-          path: switch-homebrew/SwitchFileHub.nro
+          name: SwitchFileHub-Nintendo-Switch
+          path: |
+            switch-homebrew/SwitchFileHub.nro
+            SwitchFileHub-SD.zip
           if-no-files-found: error
           retention-days: 14

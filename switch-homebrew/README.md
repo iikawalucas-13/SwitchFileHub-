@@ -1,12 +1,20 @@
 # Switch File Hub — Homebrew para Nintendo Switch
 
-Este diretório contém o aplicativo nativo para Nintendo Switch, separado dos clientes Flutter para Android e Windows.
+## Estado desta versão
 
-## Estado atual
+O NRO contém:
+- navegação e gerenciamento local do microSD;
+- criação de pastas, renomeação e exclusão;
+- cópia e movimentação de arquivos dentro do microSD;
+- servidor FTP integrado ao próprio homebrew, iniciado automaticamente na porta TCP 5000;
+- painel de transferências com quantidade ativa, concluídas, falhas e bytes enviados/recebidos durante a sessão;
+- suporte FTP passivo, MLSD/LIST, STOR/RETR e operações básicas de diretório/arquivo.
 
-**Protótipo inicial:** interface de console, montagem do microSD e navegação básica entre diretórios. Ainda não implementa servidor de rede nem transferência de arquivos. Não considerar esta versão como final.
+**Não é necessário iniciar o ftpd separado.** Mantenha o Switch File Hub aberto durante a conexão. O acesso FTP desta versão é anônimo e sem criptografia; use somente em rede local confiável.
 
-## Compilar
+A compilação do NRO pelo GitHub Actions valida a geração do binário, mas não substitui teste em um Nintendo Switch físico. O teste em hardware permanece pendente.
+
+## Como compilar
 
 O projeto usa devkitPro, devkitA64 e libnx:
 
@@ -15,29 +23,47 @@ cd switch-homebrew
 make
 ```
 
-O resultado esperado é `SwitchFileHub.nro`.
+O resultado esperado é `SwitchFileHub.nro`. O workflow verifica se o arquivo não está vazio e se contém a assinatura `NRO0`.
 
-## Instalar no cartão microSD
+## Instalar pelo cartão SD
 
-Depois de compilar, copie o arquivo para:
+Extraia o conteúdo de `SwitchFileHub-SD.zip` na raiz do microSD. O caminho final recomendado é:
 
 ```
-/switch/SwitchFileHub/SwitchFileHub.nro
+/switch/SwitchFileHub.nro
 ```
 
-Abra pelo Homebrew Menu. Faça backup dos dados importantes antes de testar qualquer homebrew.
+## Usar o servidor FTP integrado
 
-## Controles previstos
+1. Abra o NRO pelo Homebrew Menu.
+2. Confira na tela o estado do FTP e o endereço IP (porta 5000).
+3. No aplicativo Android/Windows, procure o Switch na rede ou informe o IP e a porta 5000.
+4. Deixe usuário e senha em branco nesta versão.
+5. Faça as transferências e mantenha o NRO aberto até terminar.
+
+Se o IP não aparecer no NRO, consulte o IP do Switch nas configurações de Internet ou use a descoberta automática no cliente.
+
+## Controles locais
 
 - Direcional para cima/baixo: selecionar item.
 - A: abrir pasta.
 - B: voltar uma pasta.
 - Y: atualizar listagem.
-- +: sair.
+- X: criar pasta.
+- L: renomear.
+- R: excluir (confirmação por texto).
+- ZL: copiar arquivo.
+- ZR: mover arquivo.
+- -: informações.
+- Stick esquerdo pressionado: alternar arquivos/transferências.
+- Botão na tela: alternar arquivos/transferências.
+- +: sair (encerra o servidor FTP).
 
-## Próximas etapas
+## Limitações importantes
 
-1. Validar compilação e navegação em hardware.
-2. Implementar serviço de rede para comunicação com os clientes Android e Windows.
-3. Adicionar operações de transferência com confirmação e tratamento de erros.
-4. Integrar o protocolo e os estados de conexão com os clientes existentes.
+- Até quatro sessões FTP simultâneas estão previstas no código; esse limite ainda precisa ser validado no console físico.
+- As estatísticas de transferência são da sessão atual e reiniciam ao fechar o aplicativo; ainda não são um histórico persistente.
+- Cópia e movimentação pelo gerenciador local operam apenas em arquivos; pastas completas não são copiadas ou movidas.
+- FTP anônimo e sem criptografia; não exponha a porta 5000 à internet.
+- O NRO precisa permanecer aberto.
+- O teste em console físico ainda é necessário para confirmar rede e operações de arquivos.
