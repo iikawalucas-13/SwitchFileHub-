@@ -463,7 +463,6 @@ public:
             }
             content += "\n\n";
             content += directory_status;
-            layout->shortcuts->SetText("A ABRIR   B VOLTAR   Y ATUALIZAR / REINICIAR FTP   X NOVA PASTA   L RENOMEAR   R EXCLUIR   ZL COPIAR   ZR MOVER");
         }
         layout->files->SetText(content);
     }
