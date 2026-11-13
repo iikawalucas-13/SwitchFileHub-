@@ -7,6 +7,7 @@ O NRO contém:
 - criação de pastas, renomeação e exclusão;
 - cópia e movimentação de arquivos dentro do microSD;
 - servidor FTP integrado ao próprio homebrew, iniciado automaticamente na porta TCP 5000;
+- painel de transferências com quantidade ativa, concluídas, falhas e bytes enviados/recebidos durante a sessão;
 - suporte FTP passivo, MLSD/LIST, STOR/RETR e operações básicas de diretório/arquivo.
 
 **Não é necessário iniciar o ftpd separado.** Mantenha o Switch File Hub aberto durante a conexão. O acesso FTP desta versão é anônimo e sem criptografia; use somente em rede local confiável.
@@ -54,11 +55,15 @@ Se o IP não aparecer no NRO, consulte o IP do Switch nas configurações de Int
 - ZL: copiar arquivo.
 - ZR: mover arquivo.
 - -: informações.
+- Stick esquerdo pressionado: alternar arquivos/transferências.
+- Botão na tela: alternar arquivos/transferências.
 - +: sair (encerra o servidor FTP).
 
 ## Limitações importantes
 
 - Até quatro sessões FTP simultâneas estão previstas no código; esse limite ainda precisa ser validado no console físico.
+- As estatísticas de transferência são da sessão atual e reiniciam ao fechar o aplicativo; ainda não são um histórico persistente.
+- Cópia e movimentação pelo gerenciador local operam apenas em arquivos; pastas completas não são copiadas ou movidas.
 - FTP anônimo e sem criptografia; não exponha a porta 5000 à internet.
 - O NRO precisa permanecer aberto.
 - O teste em console físico ainda é necessário para confirmar rede e operações de arquivos.
