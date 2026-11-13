@@ -324,58 +324,52 @@ public:
     pu::ui::elm::Button::Ref files_panel, tools_panel, brand_panel;
     PU_SMART_CTOR(HubLayout)
     HubLayout() {
-        // Layout compacto: textos curtos e areas separadas para evitar sobreposicao.
-        this->SetBackgroundColor(pu::ui::Color(13, 16, 25, 255));
+        // Interface em uma coluna: elimina a coluna lateral que espremia os textos.
+        this->SetBackgroundColor(pu::ui::Color(10, 14, 23, 255));
 
-        brand_panel = pu::ui::elm::Button::New(28, 18, 1224, 76,
-            " ", pu::ui::Color(255,255,255,255), pu::ui::Color(25,30,45,255));
+        brand_panel = pu::ui::elm::Button::New(24, 18, 1232, 66,
+            " ", pu::ui::Color(255,255,255,255), pu::ui::Color(24,32,48,255));
         brand_panel->SetOnClick([]() {});
+        header = pu::ui::elm::TextBlock::New(48, 27, "SWITCH FILE HUB");
+        header->SetColor(pu::ui::Color(255,255,255,255));
+        subtitle = pu::ui::elm::TextBlock::New(50, 57, "GERENCIADOR DE ARQUIVOS");
+        subtitle->SetColor(pu::ui::Color(155,174,199,255));
 
-        header = pu::ui::elm::TextBlock::New(54, 27, "SWITCH FILE HUB");
-        header->SetColor(pu::ui::Color(255, 255, 255, 255));
-        subtitle = pu::ui::elm::TextBlock::New(56, 59, "GERENCIADOR DE ARQUIVOS");
-        subtitle->SetColor(pu::ui::Color(151, 164, 187, 255));
-
-        status = pu::ui::elm::Button::New(28, 108, 590, 64,
-            "MICROSD  |  VERIFICANDO...", pu::ui::Color(235,245,255,255),
-            pu::ui::Color(31,48,70,255));
+        status = pu::ui::elm::Button::New(24, 98, 1232, 58,
+            "MICROSD  |  VERIFICANDO...", pu::ui::Color(245,248,255,255),
+            pu::ui::Color(34,48,67,255));
         status->SetOnClick([]() {});
-        ftp = pu::ui::elm::Button::New(638, 108, 614, 64,
-            "FTP  |  DESLIGADO", pu::ui::Color(235,245,255,255),
-            pu::ui::Color(31,48,70,255));
+
+        // Cartao FTP amplo e destacado; IP e porta ficam sempre visiveis.
+        ftp = pu::ui::elm::Button::New(24, 166, 1232, 82,
+            "FTP  |  INICIANDO SERVIDOR...", pu::ui::Color(255,255,255,255),
+            pu::ui::Color(24,91,145,255));
         ftp->SetOnClick([]() {});
 
-        path = pu::ui::elm::TextBlock::New(48, 190, "MICROSD  /  sdmc:/");
-        path->SetColor(pu::ui::Color(91, 194, 255, 255));
+        path = pu::ui::elm::TextBlock::New(42, 264, "MICROSD  /  sdmc:/");
+        path->SetColor(pu::ui::Color(104,205,255,255));
 
-        files_panel = pu::ui::elm::Button::New(28, 218, 820, 414,
-            " ", pu::ui::Color(255,255,255,255), pu::ui::Color(23,28,41,255));
+        files_panel = pu::ui::elm::Button::New(24, 292, 1232, 316,
+            " ", pu::ui::Color(255,255,255,255), pu::ui::Color(22,29,42,255));
         files_panel->SetOnClick([]() {});
-        files = pu::ui::elm::TextBlock::New(54, 236, "ARQUIVOS\n\nCarregando...");
-        files->SetColor(pu::ui::Color(239, 243, 250, 255));
+        files = pu::ui::elm::TextBlock::New(48, 310, "ARQUIVOS\\n\\nCarregando...");
+        files->SetColor(pu::ui::Color(242,246,252,255));
 
-        tools_panel = pu::ui::elm::Button::New(868, 218, 384, 414,
-            " ", pu::ui::Color(255,255,255,255), pu::ui::Color(23,28,41,255));
-        tools_panel->SetOnClick([]() {});
-        shortcuts = pu::ui::elm::TextBlock::New(894, 238,
-            "CONTROLES\n\nA   Abrir item\nB   Voltar pasta\nY   Atualizar\n\nACOES\n\nX   Nova pasta\nL   Renomear\nR   Excluir\nZL  Copiar\nZR  Mover\n-   Detalhes");
-        shortcuts->SetColor(pu::ui::Color(181, 194, 215, 255));
+        // Atalhos em uma unica faixa, sem painel lateral ou colisao com os arquivos.
+        shortcuts = pu::ui::elm::TextBlock::New(34, 635,
+            "A ABRIR     B VOLTAR     Y ATUALIZAR     X NOVA PASTA");
+        shortcuts->SetColor(pu::ui::Color(190,203,222,255));
 
-        footer = pu::ui::elm::TextBlock::New(40, 658,
-            "A ABRIR     B VOLTAR     Y ATUALIZAR     + SAIR");
-        footer->SetColor(pu::ui::Color(126, 143, 169, 255));
-
-        transfer_button = pu::ui::elm::Button::New(930, 650, 322, 54,
-            "VER TRANSFERENCIAS FTP", pu::ui::Color(255,255,255,255),
-            pu::ui::Color(38,91,160,255));
+        transfer_button = pu::ui::elm::Button::New(900, 624, 356, 70,
+            "TRANSFERENCIAS FTP", pu::ui::Color(255,255,255,255),
+            pu::ui::Color(35,111,190,255));
         transfer_button->SetOnClick([this]() {
             g_show_transfers = !g_show_transfers;
-            transfer_button->SetContent(g_show_transfers ? "VOLTAR AOS ARQUIVOS" : "VER TRANSFERENCIAS FTP");
+            transfer_button->SetContent(g_show_transfers ? "VOLTAR AOS ARQUIVOS" : "TRANSFERENCIAS FTP");
         });
 
         this->Add(brand_panel);
         this->Add(files_panel);
-        this->Add(tools_panel);
         this->Add(header);
         this->Add(subtitle);
         this->Add(status);
@@ -383,7 +377,6 @@ public:
         this->Add(path);
         this->Add(files);
         this->Add(shortcuts);
-        this->Add(footer);
         this->Add(transfer_button);
     }
 };
@@ -439,7 +432,7 @@ public:
                 (unsigned long long)stats.bytes_received,
                 (unsigned long long)stats.bytes_sent);
             content = summary;
-            layout->shortcuts->SetText("TRANSFERENCIAS FTP\n\nO Switch File Hub contabiliza os arquivos enviados e recebidos durante esta sessao.\n\nDICA DE CONEXAO\nDigite o endereco IP exibido no cartao FTP em um cliente FTP conectado a mesma rede Wi-Fi.\n\nSeguranca\nO FTP e anonimo e sem criptografia. Use somente em rede local confiavel.");
+            layout->shortcuts->SetText("FTP ANONIMO  |  USE SOMENTE NA REDE LOCAL CONFIAVEL");
         } else {
             content = "Seus arquivos\n\n";
             if (R_FAILED(mount_result)) {
@@ -462,7 +455,7 @@ public:
             }
             content += "\n\n";
             content += directory_status;
-            layout->shortcuts->SetText("CONTROLES\n\nA   Abrir item\nB   Voltar pasta\nY   Atualizar\n\nACOES\n\nX   Nova pasta\nL   Renomear\nR   Excluir\nZL  Copiar\nZR  Mover\n-   Detalhes\n\nFTP\n\nIP mostrado no cartao\nPorta: 5000");
+            layout->shortcuts->SetText("A ABRIR   B VOLTAR   Y ATUALIZAR   X NOVA PASTA   L RENOMEAR   R EXCLUIR   ZL COPIAR   ZR MOVER");
         }
         layout->files->SetText(content);
     }
