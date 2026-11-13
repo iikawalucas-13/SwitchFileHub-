@@ -321,6 +321,7 @@ class HubLayout : public pu::ui::Layout {
 public:
     pu::ui::elm::TextBlock::Ref header, subtitle, status, path, ftp, files, footer;
     pu::ui::elm::Button::Ref transfer_button;
+    PU_SMART_CTOR(HubLayout)
     HubLayout() {
         this->SetBackgroundColor(pu::ui::Color(18, 22, 34, 255));
         header = pu::ui::elm::TextBlock::New(34, 22, "SWITCH FILE HUB");
@@ -338,7 +339,16 @@ public:
         footer = pu::ui::elm::TextBlock::New(34, 650, "A Abrir   B Voltar   Y Atualizar   X Nova pasta   LS Transferencias   + Sair");
         footer->SetColor(pu::ui::Color(180,190,215,255));
         transfer_button = pu::ui::elm::Button::New(900, 640, 330, 54, "Ver transferencias", pu::ui::Color(255,255,255,255), pu::ui::Color(75,95,190,255));
-        transfer_button->SetOnClick([]() { g_show_transfers = !g_show_transfers; });
+        transfer_button->SetOnClick([this]() {
+            g_show_transfers = !g_show_transfers;
+            if (g_show_transfers) {
+                files->SetText("TRANSFERENCIAS\\n\\nO servidor FTP permite enviar e receber arquivos pela rede local.\\nEstado: consulte a linha FTP acima.\\n\\nO progresso detalhado sera exibido quando o registro for integrado.");
+                transfer_button->SetContent("Ver arquivos");
+            } else {
+                files->SetText("ARQUIVOS E PASTAS\\n\\nPressione Y para atualizar a listagem.");
+                transfer_button->SetContent("Ver transferencias");
+            }
+        });
         this->Add(header); this->Add(subtitle); this->Add(status); this->Add(path);
         this->Add(ftp); this->Add(files); this->Add(footer); this->Add(transfer_button);
     }
