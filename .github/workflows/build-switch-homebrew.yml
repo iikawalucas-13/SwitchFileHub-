@@ -26,26 +26,20 @@ jobs:
       - name: Baixar repositório
         uses: actions/checkout@v4
 
-      - name: Verificar ícone original do aplicativo
-        run: |
-          test -s switch-homebrew/SwitchFileHub.jpg
-          echo "Ícone JPEG original encontrado; será incorporado sem redesenho."
-
       - name: Compilar homebrew
         run: |
           cd switch-homebrew
           make
 
-      - name: Validar arquivo NRO e ícone
+      - name: Validar arquivo NRO
         run: |
           test -s switch-homebrew/SwitchFileHub.nro
-          test -s switch-homebrew/SwitchFileHub.jpg
           magic="$(dd if=switch-homebrew/SwitchFileHub.nro bs=1 skip=16 count=4 2>/dev/null)"
           if [ "$magic" != "NRO0" ]; then
             echo "Erro: o arquivo gerado não possui a assinatura NRO0 esperada."
             exit 1
           fi
-          echo "NRO válido: assinatura NRO0 encontrada; ícone JPEG incorporado na compilação."
+          echo "NRO válido: assinatura NRO0 encontrada."
 
       - name: Preparar pacote para o cartão SD
         run: |
