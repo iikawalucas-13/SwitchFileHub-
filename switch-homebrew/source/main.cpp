@@ -336,7 +336,7 @@ public:
         ftp->SetColor(pu::ui::Color(150,165,195,255));
         files = pu::ui::elm::TextBlock::New(42, 230, "Carregando arquivos...");
         files->SetColor(pu::ui::Color(235,238,245,255));
-        footer = pu::ui::elm::TextBlock::New(34, 650, "A Abrir   B Voltar   Y Atualizar   X Nova pasta   LS Transferencias   + Sair");
+        footer = pu::ui::elm::TextBlock::New(34, 650, "A Abrir   B Voltar   Y Atualizar   X Pasta   L Renomear   R Excluir   ZL Copiar   ZR Mover   LS Transferencias   + Sair");
         footer->SetColor(pu::ui::Color(180,190,215,255));
         transfer_button = pu::ui::elm::Button::New(900, 640, 330, 54, "Ver transferencias", pu::ui::Color(255,255,255,255), pu::ui::Color(75,95,190,255));
         transfer_button->SetOnClick([this]() {
@@ -361,7 +361,7 @@ public:
     void refreshText() {
         if (R_SUCCEEDED(mount_result)) {
             char s[180];
-            snprintf(s,sizeof(s),"MICROSD: conectado  |  ITENS: %d  |  VERSAO: 0.4.0",entry_count);
+            snprintf(s,sizeof(s),"MICROSD: conectado  |  ITENS: %d  |  VERSAO: 0.5.0",entry_count);
             layout->status->SetText(s);
         } else {
             char s[180];
@@ -376,12 +376,25 @@ public:
         else layout->ftp->SetText("FTP: desligado");
         std::string listing;
         if(g_show_transfers) {
-            listing = "TRANSFERENCIAS\n\n";
-            listing += "O servidor FTP permite enviar e receber arquivos pela rede local.\n";
-            listing += "Estado: ";
-            listing += (fs == 2 ? "servidor ativo" : "servidor inativo");
-            listing += "\n\nA lista detalhada de transferencias sera exibida quando o registro\n";
-            listing += "de progresso for integrado ao servidor FTP.";
+            FtpTransferStats stats = {};
+            ftpServerGetStats(&stats);
+            char transfer_summary[512];
+            snprintf(transfer_summary, sizeof(transfer_summary),
+                "TRANSFERENCIAS FTP - ESTA SESSAO\\n\\n"
+                "Estado do servidor: %s\\n"
+                "Transferencias ativas: %u\\n"
+                "Concluidas: %llu\\n"
+                "Com falha: %llu\\n\\n"
+                "Recebido no Switch: %llu bytes\\n"
+                "Enviado pelo Switch: %llu bytes\\n\\n"
+                "As estatisticas reiniciam ao fechar o aplicativo.",
+                fs == 2 ? "ATIVO" : (fs < 0 ? "ERRO" : "INATIVO"),
+                (unsigned int)stats.active,
+                (unsigned long long)stats.completed,
+                (unsigned long long)stats.failed,
+                (unsigned long long)stats.bytes_received,
+                (unsigned long long)stats.bytes_sent);
+            listing = transfer_summary;
         } else {
             listing = "ARQUIVOS E PASTAS\n\n";
             if(R_FAILED(mount_result)) listing += directory_status;
