@@ -401,23 +401,23 @@ public:
                 else if(R_SUCCEEDED(mount_result)) create_folder();
             }
             if(down & HidNpadButton_B) {
-                if(transfer_screen) transfer_screen = false;
+                if(g_show_transfers) g_show_transfers = false;
                 else if(R_SUCCEEDED(mount_result)) go_parent();
             }
             if(down & HidNpadButton_Y) {
                 if(R_SUCCEEDED(mount_result)) load_directory();
             }
-            if(down & HidNpadButton_Up && !transfer_screen && selected > 0) selected--;
-            if(down & HidNpadButton_Down && !transfer_screen && selected < entry_count - 1) selected++;
+            if(down & HidNpadButton_Up && !g_show_transfers && selected > 0) selected--;
+            if(down & HidNpadButton_Down && !g_show_transfers && selected < entry_count - 1) selected++;
             if(down & HidNpadButton_A) {
-                if(transfer_screen) transfer_screen = false;
+                if(g_show_transfers) g_show_transfers = false;
                 else if(R_SUCCEEDED(mount_result)) enter_selected();
             }
-            if(down & HidNpadButton_L && !transfer_screen && R_SUCCEEDED(mount_result)) rename_selected();
-            if(down & HidNpadButton_R && !transfer_screen && R_SUCCEEDED(mount_result)) delete_selected();
-            if(down & HidNpadButton_ZL && !transfer_screen && R_SUCCEEDED(mount_result)) copy_selected();
-            if(down & HidNpadButton_ZR && !transfer_screen && R_SUCCEEDED(mount_result)) move_selected();
-            if(down & HidNpadButton_Minus && !transfer_screen && R_SUCCEEDED(mount_result)) show_info();
+            if(down & HidNpadButton_L && !g_show_transfers && R_SUCCEEDED(mount_result)) rename_selected();
+            if(down & HidNpadButton_R && !g_show_transfers && R_SUCCEEDED(mount_result)) delete_selected();
+            if(down & HidNpadButton_ZL && !g_show_transfers && R_SUCCEEDED(mount_result)) copy_selected();
+            if(down & HidNpadButton_ZR && !g_show_transfers && R_SUCCEEDED(mount_result)) move_selected();
+            if(down & HidNpadButton_Minus && !g_show_transfers && R_SUCCEEDED(mount_result)) show_info();
             if(down & HidNpadButton_StickL) g_show_transfers = !g_show_transfers;
             refreshText();
         });
