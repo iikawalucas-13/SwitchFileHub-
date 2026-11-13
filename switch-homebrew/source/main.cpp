@@ -74,7 +74,7 @@ static void diagnose_mount_error(Result rc) {
     mount_description = (u32)R_DESCRIPTION(rc);
     if (R_MODULE(rc) == Module_Libnx && R_DESCRIPTION(rc) == LibnxError_OutOfMemory) {
         snprintf(directory_status, sizeof(directory_status),
-                 "Falha de memoria ao registrar o dispositivo SD (libnx).");
+                 "libnx nao conseguiu registrar sdmc. Pode ja estar montado ou sem entrada livre.");
     } else {
         snprintf(directory_status, sizeof(directory_status),
                  "Falha ao abrir o sistema de arquivos do microSD.");
@@ -491,7 +491,11 @@ public:
 int main(int argc, char **argv) {
     (void)argc; (void)argv;
     __nx_fsdev_support_cwd = false;
-    mount_result = fsdevMountSdmc();
+    // Alguns ambientes homebrew podem entregar sdmc ja registrado.
+    // Reutiliza o dispositivo existente para evitar uma segunda registracao.
+    mount_result = fsdevGetDeviceFileSystem("sdmc") != nullptr
+        ? 0
+        : fsdevMountSdmc();
     if(R_SUCCEEDED(mount_result)) { load_directory(); ftpServerStart(); }
     else diagnose_mount_error(mount_result);
     auto opts = pu::ui::render::RendererInitOptions(SDL_INIT_EVERYTHING, pu::ui::render::RendererHardwareFlags);
