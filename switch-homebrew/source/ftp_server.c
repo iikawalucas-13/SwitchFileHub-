@@ -18,6 +18,8 @@
 #define FTP_MAX_CLIENTS 4
 
 static Thread server_thread;
+static bool server_thread_valid = false;
+static bool socket_initialized = false;
 static volatile bool server_running = false;
 static volatile int server_state = 0; /* 0 stopped, 1 starting, 2 ready, -1 error */
 static int listen_fd = -1;
@@ -344,11 +346,11 @@ static void server_main(void *unused) {
     (void)unused;
     struct sockaddr_in addr;
     listen_fd=socket(AF_INET,SOCK_STREAM,0);
-    if (listen_fd<0) { server_state=-1; return; }
+    if (listen_fd<0) { server_state=-1; server_running=false; return; }
     int yes=1; setsockopt(listen_fd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(yes));
     memset(&addr,0,sizeof(addr)); addr.sin_family=AF_INET; addr.sin_addr.s_addr=htonl(INADDR_ANY); addr.sin_port=htons(FTP_PORT);
     if (bind(listen_fd,(struct sockaddr*)&addr,sizeof(addr))<0 || listen(listen_fd,FTP_MAX_CLIENTS)<0) {
-        close(listen_fd); listen_fd=-1; server_state=-1; return;
+        close(listen_fd); listen_fd=-1; server_state=-1; server_running=false; return;
     }
     int flags = fcntl(listen_fd, F_GETFL, 0);
     if (flags >= 0) fcntl(listen_fd, F_SETFL, flags | O_NONBLOCK);
@@ -398,12 +400,19 @@ static void server_main(void *unused) {
 }
 
 Result ftpServerStart(void) {
-    if (server_running) return 0;
+    if (server_running && server_state == 2) return 0;
+    /* Reap a previous server thread that exited after a bind/socket error. */
+    if (server_thread_valid) {
+        threadWaitForExit(&server_thread);
+        threadClose(&server_thread);
+        server_thread_valid = false;
+    }
     server_state=1;
     SocketInitConfig socket_config = *socketGetDefaultInitConfig();
     socket_config.num_bsd_sessions = 8;
     Result rc=socketInitialize(&socket_config);
-    if (R_FAILED(rc)) { server_state=-1; return rc; }
+    if (R_FAILED(rc)) { server_state=-1; server_running=false; return rc; }
+    socket_initialized = true;
     /* Determine the LAN interface address without sending any packets. */
     int probe=socket(AF_INET,SOCK_DGRAM,0);
     if (probe>=0) {
@@ -418,19 +427,27 @@ Result ftpServerStart(void) {
     }
     server_running=true;
     rc=threadCreate(&server_thread,server_main,NULL,NULL,0x10000,0x2C,-2);
-    if (R_FAILED(rc)) { server_running=false; socketExit(); server_state=-1; return rc; }
+    if (R_FAILED(rc)) { server_running=false; socketExit(); socket_initialized=false; server_state=-1; return rc; }
     rc=threadStart(&server_thread);
-    if (R_FAILED(rc)) { server_running=false; threadClose(&server_thread); socketExit(); server_state=-1; return rc; }
+    if (R_FAILED(rc)) { server_running=false; threadClose(&server_thread); socketExit(); socket_initialized=false; server_state=-1; return rc; }
+    server_thread_valid = true;
     return 0;
 }
 
 void ftpServerStop(void) {
-    if (!server_running) return;
-    server_running=false;
-    if (listen_fd>=0) shutdown(listen_fd,SHUT_RDWR);
-    threadWaitForExit(&server_thread);
-    threadClose(&server_thread);
-    socketExit();
+    if (server_running) {
+        server_running=false;
+        if (listen_fd>=0) shutdown(listen_fd,SHUT_RDWR);
+    }
+    if (server_thread_valid) {
+        threadWaitForExit(&server_thread);
+        threadClose(&server_thread);
+        server_thread_valid=false;
+    }
+    if (socket_initialized) {
+        socketExit();
+        socket_initialized=false;
+    }
 }
 
 int ftpServerState(void) { return server_state; }
