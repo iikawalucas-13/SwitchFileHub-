@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
+#include "ftp_server.h"
 
 #define MAX_ENTRIES 128
 #define NAME_LENGTH 256
@@ -313,6 +314,11 @@ static void draw_ui(void) {
         printf("  MICROSD [ ERRO ]            VERSAO: 0.2.0\n");
     printf("  LOCAL: %.62s\n", current_path);
     printf("  STATUS: %.65s\n", directory_status);
+    int ftp_state = ftpServerState();
+    if (ftp_state == 2) printf("  FTP: ATIVO  %s:%d (usuario/senha: anonimo)\n", ftpServerIp(), 5000);
+    else if (ftp_state == 1) printf("  FTP: iniciando servidor na porta 5000...\n");
+    else if (ftp_state < 0) printf("  FTP: falha ao iniciar servidor de rede.\n");
+    else printf("  FTP: desligado\n");
 
     if (R_FAILED(mount_result)) {
         printf("  CODIGO: 0x%08X  MODULO: %u  DESCRICAO: %u\n",
@@ -349,8 +355,10 @@ int main(int argc, char **argv) {
     (void)argv;
     consoleInit(NULL);
     mount_result = fsdevMountSdmc();
-    if (R_SUCCEEDED(mount_result)) load_directory();
-    else diagnose_mount_error(mount_result);
+    if (R_SUCCEEDED(mount_result)) {
+        load_directory();
+        ftpServerStart();
+    } else diagnose_mount_error(mount_result);
 
     padConfigureInput(1, HidNpadStyleSet_NpadStandard);
     PadState pad;
@@ -375,6 +383,7 @@ int main(int argc, char **argv) {
         }
         draw_ui();
     }
+    ftpServerStop();
     if (R_SUCCEEDED(mount_result)) fsdevUnmountDevice("sdmc");
     consoleExit(NULL);
     return 0;
