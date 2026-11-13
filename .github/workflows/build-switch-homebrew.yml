@@ -2,7 +2,7 @@ name: Build Switch Homebrew NRO
 
 on:
   push:
-    branches: [main, fix/switch-browser-diagnostics]
+    branches: [main, fix/switch-browser-diagnostics, feat/switch-logo-nro]
     paths:
       - "switch-homebrew/**"
       - ".github/workflows/build-switch-homebrew.yml"
@@ -26,17 +26,10 @@ jobs:
       - name: Baixar repositório
         uses: actions/checkout@v4
 
-      - name: Gerar ícone JPEG do aplicativo
+      - name: Verificar ícone original do aplicativo
         run: |
-          if command -v pacman >/dev/null 2>&1; then
-            pacman -Sy --noconfirm imagemagick librsvg
-          elif command -v apt-get >/dev/null 2>&1; then
-            apt-get update
-            apt-get install -y imagemagick librsvg2-bin
-          fi
-          rsvg-convert -w 256 -h 256 switch-homebrew/icon.svg > /tmp/SwitchFileHub-icon.png
-          convert /tmp/SwitchFileHub-icon.png -background "#07152f" -alpha remove -alpha off -quality 90 switch-homebrew/SwitchFileHub.jpg
           test -s switch-homebrew/SwitchFileHub.jpg
+          echo "Ícone JPEG original encontrado; será incorporado sem redesenho."
 
       - name: Compilar homebrew
         run: |
