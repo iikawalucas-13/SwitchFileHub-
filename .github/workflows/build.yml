@@ -5,6 +5,7 @@ on:
     branches: [main, fix/switch-browser-diagnostics, feat/switch-logo-nro, feat/switch-gui-plutonium]
     paths:
       - 'SwitchFileHub_1.0_FINAL.zip'
+      - 'client_overrides/**'
       - '.github/workflows/build.yml'
   workflow_dispatch:
 
@@ -29,6 +30,11 @@ jobs:
           if (!$pubspec) { throw 'pubspec.yaml não foi encontrado dentro do ZIP.' }
           "PROJECT_DIR=$($pubspec.Directory.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
           Write-Host "Projeto encontrado em $($pubspec.Directory.FullName)"
+          $overlay = Join-Path $env:GITHUB_WORKSPACE 'client_overrides\lib'
+          if (Test-Path $overlay) {
+            New-Item -ItemType Directory -Force -Path (Join-Path $env:PROJECT_DIR 'lib') | Out-Null
+            Copy-Item -Path "$overlay\*" -Destination (Join-Path $env:PROJECT_DIR 'lib') -Recurse -Force
+          }
 
       - name: Instalar Flutter
         uses: subosito/flutter-action@v2
@@ -92,6 +98,10 @@ jobs:
           fi
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
           echo "Projeto encontrado em $PROJECT_DIR"
+          if [ -d "$GITHUB_WORKSPACE/client_overrides/lib" ]; then
+            mkdir -p "$PROJECT_DIR/lib"
+            cp -R "$GITHUB_WORKSPACE/client_overrides/lib/." "$PROJECT_DIR/lib/"
+          fi
 
       - name: Instalar Flutter
         uses: subosito/flutter-action@v2
