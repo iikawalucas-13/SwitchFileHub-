@@ -185,7 +185,7 @@ static void transfer_file(FtpWorker *worker, const char *path, bool upload) {
     FILE *file = upload ? fopen(write_path, "wbx") : fopen(path, "rb");
     if (!file) { reply(control, "550 File unavailable\r\n"); return; }
     reply(control, "150 Opening data connection\r\n");
-    int data = accept_data(data_listener);
+    int data = accept_data(worker);
     if (data < 0) {
         fclose(file);
         if (upload) remove(write_path);
@@ -268,7 +268,7 @@ static void serve_client(FtpWorker *worker) {
                 if (fd >= 0) close(fd);
                 reply(control,"425 Cannot open passive listener\r\n");
             } else {
-                data_listener=fd; snprintf(second,sizeof(second),"229 Entering Extended Passive Mode (|||%u|)\r\n",ntohs(a.sin_port)); reply(control,second);
+                worker->data_listener=fd; snprintf(second,sizeof(second),"229 Entering Extended Passive Mode (|||%u|)\r\n",ntohs(a.sin_port)); reply(control,second);
             }
         } else if (!strcmp(line,"LIST") || !strcmp(line,"MLSD")) {
             if (!ftp_virtual_path(cwd,arg,path,sizeof(path))) { reply(control,"550 Invalid path\r\n"); continue; }
@@ -337,7 +337,8 @@ static void server_main(void *unused) {
         FtpWorker *slot=NULL;
         for (int i=0;i<FTP_MAX_CLIENTS;i++) if (!workers[i].in_use) { slot=&workers[i]; break; }
         if (!slot) {
-            send_all(client,"421 Too many clients; try again later\\r\\n",42);
+            const char *busy = "421 Too many clients; try again later\r\n";
+            send_all(client,busy,strlen(busy));
             close(client);
             continue;
         }
@@ -373,7 +374,7 @@ Result ftpServerStart(void) {
     if (server_running) return 0;
     server_state=1;
     SocketInitConfig socket_config = *socketGetDefaultInitConfig();
-    socket_config.num_bsd_sessions = 4;
+    socket_config.num_bsd_sessions = 8;
     Result rc=socketInitialize(&socket_config);
     if (R_FAILED(rc)) { server_state=-1; return rc; }
     /* Determine the LAN interface address without sending any packets. */
