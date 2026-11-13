@@ -21,7 +21,7 @@
 
 ## Limitações
 - FTP anônimo e sem criptografia; use somente em rede local confiável.
-- NRO precisa permanecer aberto; uma sessão FTP por vez.
+- NRO precisa permanecer aberto; até quatro sessões FTP simultâneas no código (pendente de validação em hardware).
 - Não há FTPS/SFTP nem retomada de transferência interrompida.
 - A descoberta depende de dispositivos na mesma sub-rede privada /24.
 - Compatibilidade e estabilidade precisam ser verificadas em Switch físico, Android e Windows.
