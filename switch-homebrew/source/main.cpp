@@ -319,63 +319,57 @@ static void show_info(void) {
 static bool g_show_transfers = false;
 class HubLayout : public pu::ui::Layout {
 public:
-    pu::ui::elm::TextBlock::Ref header, subtitle, status, path, ftp, files, footer;
-    pu::ui::elm::Button::Ref transfer_button;
+    pu::ui::elm::TextBlock::Ref header, subtitle, path, files, shortcuts, footer;
+    pu::ui::elm::Button::Ref status, ftp, transfer_button;
     PU_SMART_CTOR(HubLayout)
     HubLayout() {
-        this->SetBackgroundColor(pu::ui::Color(18, 22, 34, 255));
-        header = pu::ui::elm::TextBlock::New(34, 22, "SWITCH FILE HUB");
-        header->SetColor(pu::ui::Color(255,255,255,255));
-        subtitle = pu::ui::elm::TextBlock::New(36, 62, "GERENCIADOR DO MICROSD");
-        subtitle->SetColor(pu::ui::Color(160,170,195,255));
-        status = pu::ui::elm::TextBlock::New(36, 112, "MICROSD: verificando...");
-        status->SetColor(pu::ui::Color(100,220,170,255));
-        path = pu::ui::elm::TextBlock::New(36, 146, "LOCAL: sdmc:/");
-        path->SetColor(pu::ui::Color(210,215,230,255));
-        ftp = pu::ui::elm::TextBlock::New(36, 180, "FTP: desligado");
-        ftp->SetColor(pu::ui::Color(150,165,195,255));
-        files = pu::ui::elm::TextBlock::New(42, 230, "Carregando arquivos...");
-        files->SetColor(pu::ui::Color(235,238,245,255));
-        footer = pu::ui::elm::TextBlock::New(34, 650, "A Abrir   B Voltar   Y Atualizar   LS Transferencias   + Sair");
-        footer->SetColor(pu::ui::Color(180,190,215,255));
-        transfer_button = pu::ui::elm::Button::New(900, 640, 330, 54, "Ver transferencias", pu::ui::Color(255,255,255,255), pu::ui::Color(75,95,190,255));
+        this->SetBackgroundColor(pu::ui::Color(10, 14, 25, 255));
+
+        header = pu::ui::elm::TextBlock::New(42, 24, "SWITCH FILE HUB");
+        header->SetColor(pu::ui::Color(248, 250, 255, 255));
+        subtitle = pu::ui::elm::TextBlock::New(44, 68, "CENTRAL DE ARQUIVOS  |  NINTENDO SWITCH");
+        subtitle->SetColor(pu::ui::Color(135, 155, 190, 255));
+
+        status = pu::ui::elm::Button::New(42, 112, 430, 66,
+            "MICROSD  |  VERIFICANDO...", pu::ui::Color(245,248,255,255),
+            pu::ui::Color(27,43,62,255));
+        status->SetOnClick([]() {});
+        ftp = pu::ui::elm::Button::New(490, 112, 738, 66,
+            "FTP  |  DESLIGADO", pu::ui::Color(245,248,255,255),
+            pu::ui::Color(31,39,67,255));
+        ftp->SetOnClick([]() {});
+
+        path = pu::ui::elm::TextBlock::New(48, 204, "LOCAL  /  sdmc:/");
+        path->SetColor(pu::ui::Color(130, 205, 255, 255));
+
+        files = pu::ui::elm::TextBlock::New(54, 250, "ARQUIVOS E PASTAS\n\nCarregando...");
+        files->SetColor(pu::ui::Color(238, 242, 250, 255));
+
+        shortcuts = pu::ui::elm::TextBlock::New(870, 252,
+            "ATALHOS\n\nA  Abrir item\nB  Voltar pasta\nY  Atualizar lista\nX  Nova pasta\nL  Renomear\nR  Excluir\nZL  Copiar arquivo\nZR  Mover arquivo\n-  Informacoes\n\nDICA\nUse o FTP na mesma rede Wi-Fi para acessar os arquivos pelo celular ou computador.");
+        shortcuts->SetColor(pu::ui::Color(150, 170, 205, 255));
+
+        footer = pu::ui::elm::TextBlock::New(44, 662,
+            "SWITCH FILE HUB  0.6.0     •     A: SELECIONAR     B: VOLTAR     +: SAIR");
+        footer->SetColor(pu::ui::Color(125, 145, 175, 255));
+
+        transfer_button = pu::ui::elm::Button::New(940, 626, 288, 58,
+            "VER TRANSFERENCIAS", pu::ui::Color(255,255,255,255),
+            pu::ui::Color(63,88,180,255));
         transfer_button->SetOnClick([this]() {
             g_show_transfers = !g_show_transfers;
-            if (g_show_transfers) {
-                FtpTransferStats stats = {};
-                ftpServerGetStats(&stats);
-                char summary[512];
-                snprintf(summary, sizeof(summary),
-                    "TRANSFERENCIAS FTP - ESTA SESSAO\n\nAtivas: %u\nConcluidas: %llu\nFalhas: %llu\n\nRecebido: %llu bytes\nEnviado: %llu bytes\n\nEstatisticas reiniciam ao fechar o app.",
-                    (unsigned int)stats.active,
-                    (unsigned long long)stats.completed,
-                    (unsigned long long)stats.failed,
-                    (unsigned long long)stats.bytes_received,
-                    (unsigned long long)stats.bytes_sent);
-                files->SetText(summary);
-                transfer_button->SetContent("Ver arquivos");
-            } else {
-                if (R_SUCCEEDED(mount_result)) load_directory();
-                std::string listing = "ARQUIVOS E PASTAS\n\n";
-                if (entry_count == 0) listing += "Esta pasta esta vazia.";
-                else {
-                    int first = (selected / PAGE_SIZE) * PAGE_SIZE;
-                    int last = std::min(first + PAGE_SIZE, entry_count);
-                    for (int i = first; i < last; i++) {
-                        listing += (i == selected ? "> " : "  ");
-                        listing += entries[i].is_dir ? "[PASTA] " : "[ARQ.]  ";
-                        listing += entries[i].name;
-                        listing += "\n";
-                    }
-                }
-                listing += "\n";
-                listing += directory_status;
-                files->SetText(listing);
-                transfer_button->SetContent("Ver transferencias");
-            }
+            transfer_button->SetContent(g_show_transfers ? "VER ARQUIVOS" : "VER TRANSFERENCIAS");
         });
-        this->Add(header); this->Add(subtitle); this->Add(status); this->Add(path);
-        this->Add(ftp); this->Add(files); this->Add(footer); this->Add(transfer_button);
+
+        this->Add(header);
+        this->Add(subtitle);
+        this->Add(status);
+        this->Add(ftp);
+        this->Add(path);
+        this->Add(files);
+        this->Add(shortcuts);
+        this->Add(footer);
+        this->Add(transfer_button);
     }
 };
 class HubApplication : public pu::ui::Application {
@@ -386,58 +380,76 @@ public:
     void refreshText() {
         if (R_SUCCEEDED(mount_result)) {
             char s[180];
-            snprintf(s,sizeof(s),"MICROSD: conectado  |  ITENS: %d  |  VERSAO: 0.5.0",entry_count);
-            layout->status->SetText(s);
+            snprintf(s, sizeof(s), "MICROSD  |  CONECTADO  |  %d ITENS", entry_count);
+            layout->status->SetContent(s);
         } else {
             char s[180];
-            snprintf(s,sizeof(s),"MICROSD: erro 0x%08X  |  modulo %u / descricao %u",(unsigned int)mount_result,mount_module,mount_description);
-            layout->status->SetText(s);
+            snprintf(s, sizeof(s), "MICROSD  |  ERRO 0x%08X", (unsigned int)mount_result);
+            layout->status->SetContent(s);
         }
-        layout->path->SetText(std::string("LOCAL: ") + current_path);
+
         int fs = ftpServerState();
-        if(fs == 2) layout->ftp->SetText(std::string("FTP: ATIVO  ") + ftpServerIp() + ":5000  |  acesso anonimo");
-        else if(fs == 1) layout->ftp->SetText("FTP: iniciando na porta 5000...");
-        else if(fs < 0) layout->ftp->SetText("FTP: falha ao iniciar");
-        else layout->ftp->SetText("FTP: desligado");
-        std::string listing;
-        if(g_show_transfers) {
+        if (fs == 2) {
+            char ftp_text[180];
+            snprintf(ftp_text, sizeof(ftp_text), "FTP  |  ATIVO  |  %s:5000  |  ANONIMO", ftpServerIp());
+            layout->ftp->SetContent(ftp_text);
+        } else if (fs == 1) {
+            layout->ftp->SetContent("FTP  |  INICIANDO SERVIDOR...");
+        } else if (fs < 0) {
+            layout->ftp->SetContent("FTP  |  FALHA AO INICIAR");
+        } else {
+            layout->ftp->SetContent("FTP  |  DESLIGADO");
+        }
+
+        layout->path->SetText(std::string("LOCAL  /  ") + current_path);
+
+        std::string content;
+        if (g_show_transfers) {
             FtpTransferStats stats = {};
             ftpServerGetStats(&stats);
-            char transfer_summary[512];
-            snprintf(transfer_summary, sizeof(transfer_summary),
-                "TRANSFERENCIAS FTP - ESTA SESSAO\n\n"
-                "Estado do servidor: %s\n"
-                "Transferencias ativas: %u\n"
-                "Concluidas: %llu\n"
-                "Com falha: %llu\n\n"
-                "Recebido no Switch: %llu bytes\n"
-                "Enviado pelo Switch: %llu bytes\n\n"
-                "As estatisticas reiniciam ao fechar o aplicativo.",
-                fs == 2 ? "ATIVO" : (fs < 0 ? "ERRO" : "INATIVO"),
+            char summary[768];
+            snprintf(summary, sizeof(summary),
+                "PAINEL DE TRANSFERENCIAS\\n\\n"
+                "STATUS DO SERVIDOR   %s\\n\\n"
+                "TRANSFERENCIAS ATIVAS       %u\\n"
+                "CONCLUIDAS                  %llu\\n"
+                "COM FALHA                   %llu\\n\\n"
+                "DADOS RECEBIDOS NO SWITCH   %llu bytes\\n"
+                "DADOS ENVIADOS PELO SWITCH  %llu bytes\\n\\n"
+                "Os numeros mostram somente esta sessao e reiniciam ao fechar o app.",
+                fs == 2 ? "ONLINE" : (fs < 0 ? "ERRO" : "OFFLINE"),
                 (unsigned int)stats.active,
                 (unsigned long long)stats.completed,
                 (unsigned long long)stats.failed,
                 (unsigned long long)stats.bytes_received,
                 (unsigned long long)stats.bytes_sent);
-            listing = transfer_summary;
+            content = summary;
+            layout->shortcuts->SetText("TRANSFERENCIAS FTP\\n\\nO Switch File Hub contabiliza os arquivos enviados e recebidos durante esta sessao.\\n\\nDICA DE CONEXAO\\nDigite o endereco IP exibido no cartao FTP em um cliente FTP conectado a mesma rede Wi-Fi.\\n\\nSeguranca\\nO FTP e anonimo e sem criptografia. Use somente em rede local confiavel.");
         } else {
-            listing = "ARQUIVOS E PASTAS\n\n";
-            if(R_FAILED(mount_result)) listing += directory_status;
-            else if(entry_count == 0) listing += "Esta pasta esta vazia.";
-            else {
-                int first = (selected / 10) * 10;
-                int last = std::min(first + 10, entry_count);
-                for(int i=first;i<last;i++) {
-                    listing += (i == selected ? "> " : "  ");
-                    listing += entries[i].is_dir ? "[PASTA] " : "[ARQ.]  ";
-                    listing += entries[i].name;
-                    listing += "\n";
+            content = "ARQUIVOS E PASTAS\\n\\n";
+            if (R_FAILED(mount_result)) {
+                content += directory_status;
+                content += "\\n\\nO cartao nao foi montado. Reinicie o console e tente novamente. Se continuar, envie o codigo de erro para diagnostico.";
+            } else if (entry_count == 0) {
+                content += "ESTA PASTA ESTA VAZIA.";
+            } else {
+                int first = (selected / PAGE_SIZE) * PAGE_SIZE;
+                int last = std::min(first + PAGE_SIZE, entry_count);
+                for (int i = first; i < last; i++) {
+                    content += (i == selected ? "  >  " : "     ");
+                    content += entries[i].is_dir ? "[PASTA]  " : "[ARQUIVO]  ";
+                    content += entries[i].name;
+                    content += "\\n";
                 }
+                char page[80];
+                snprintf(page, sizeof(page), "\\nPagina %d  |  %d item(ns)", selected / PAGE_SIZE + 1, entry_count);
+                content += page;
             }
-            listing += "\n";
-            listing += directory_status;
+            content += "\\n\\n";
+            content += directory_status;
+            layout->shortcuts->SetText("ATALHOS\\n\\nA  Abrir item\\nB  Voltar pasta\\nY  Atualizar lista\\nX  Nova pasta\\nL  Renomear\\nR  Excluir\\nZL  Copiar arquivo\\nZR  Mover arquivo\\n-  Informacoes\\n\\nDICA\\nUse o FTP na mesma rede Wi-Fi para acessar os arquivos pelo celular ou computador.");
         }
-        layout->files->SetText(listing);
+        layout->files->SetText(content);
     }
     void OnLoad() override {
         layout = HubLayout::New();
