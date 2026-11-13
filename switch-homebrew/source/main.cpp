@@ -14,7 +14,7 @@
 
 /* Avoid an extra heap allocation for fsdev current-directory tracking.
    Every filesystem path in this app is absolute (sdmc:/...). */
-extern bool __nx_fsdev_support_cwd;
+extern "C" bool __nx_fsdev_support_cwd;
 
 #define MAX_ENTRIES 128
 #define NAME_LENGTH 256
@@ -422,7 +422,6 @@ public:
             if(down & HidNpadButton_StickL) transfer_screen = !transfer_screen;
             refreshText();
         });
-        this->AddRenderCallback([&]() { refreshText(); });
         refreshText();
     }
 };
