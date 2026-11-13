@@ -374,7 +374,7 @@ static void server_main(void *unused) {
         slot->data_fd=-1;
         slot->done=false;
         slot->in_use=true;
-        Result rc=threadCreate(&slot->thread,client_main,slot,NULL,0x8000,0x2D,-2);
+        Result rc=threadCreate(&slot->thread,client_main,slot,NULL,0x20000,0x2D,-2);
         if (R_FAILED(rc) || R_FAILED(threadStart(&slot->thread))) {
             shutdown(client,SHUT_RDWR);
             close(client);
