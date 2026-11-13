@@ -39,3 +39,17 @@
 
 ## Conclusão
 **Entrega de código e CI parcialmente validada; teste funcional no Nintendo Switch físico ainda pendente.** Não considerar o projeto pronto para entrega final até concluir o teste real e confirmar que o cliente Android/Windows conecta ao servidor integrado sem iniciar ftpd separado.
+
+
+## Atualização — integração GUI Plutonium (13/11/2026)
+
+- Branch: `feat/switch-gui-plutonium`.
+- Commit do NRO: `8224651d06516cc095bf307fe38fa70fa2e0ef7e`.
+- Workflow NRO: [execução 43486919603](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43486919603) — job Nintendo Switch NRO concluído com sucesso.
+- Etapas aprovadas: compilação do Plutonium, compilação do homebrew, validação da assinatura `NRO0`, montagem do pacote para microSD e publicação do artifact.
+- Artifact: [SwitchFileHub-Nintendo-Switch.zip](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43486919603) (ID 14067243923).
+- Inspeção do ZIP: contém `switch-homebrew/SwitchFileHub.nro` e `SwitchFileHub-SD.zip`; o pacote SD contém `switch/SwitchFileHub.nro`.
+- Tamanho do NRO: 9.383.341 bytes. Assinatura `NRO0` confirmada no deslocamento esperado.
+- SHA-256 do NRO: `93048dd07291b3177f6de49c59452875a9719633fa0fcd2e881341ce95480ec8`.
+- Cliente Android/Windows: execução [43486780996](https://github.com/iikawalucas-13/SwitchFileHub-/actions/runs/43486780996) ainda estava em andamento na última consulta; nenhum resultado final foi declarado.
+- Teste em Switch físico: não executado por este ambiente. Conectividade Wi-Fi, operações FTP reais, interface no console e estabilidade permanecem pendentes.
