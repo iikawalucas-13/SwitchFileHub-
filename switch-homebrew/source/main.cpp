@@ -319,8 +319,8 @@ static void show_info(void) {
 static bool g_show_transfers = false;
 class HubLayout : public pu::ui::Layout {
 public:
-    pu::ui::elm::TextBlock::Ref header, subtitle, path, files, shortcuts, footer;
-    pu::ui::elm::Button::Ref status, ftp, transfer_button;
+    pu::ui::elm::TextBlock::Ref header, subtitle, path, files;
+    pu::ui::elm::Button::Ref status, ftp, transfer_button;\n    pu::ui::elm::Button::Ref key_a, key_b, key_y, key_x, key_l, key_r, key_zl, key_zr, key_minus;
     pu::ui::elm::Button::Ref files_panel, tools_panel, brand_panel;
     PU_SMART_CTOR(HubLayout)
     HubLayout() {
@@ -349,18 +349,26 @@ public:
         path = pu::ui::elm::TextBlock::New(42, 264, "MICROSD  /  sdmc:/");
         path->SetColor(pu::ui::Color(104,205,255,255));
 
-        files_panel = pu::ui::elm::Button::New(24, 292, 1232, 316,
+        files_panel = pu::ui::elm::Button::New(24, 292, 1232, 270,
             " ", pu::ui::Color(255,255,255,255), pu::ui::Color(22,29,42,255));
         files_panel->SetOnClick([]() {});
         files = pu::ui::elm::TextBlock::New(48, 310, "ARQUIVOS\\n\\nCarregando...");
         files->SetColor(pu::ui::Color(242,246,252,255));
 
-        // Atalhos em uma unica faixa, sem painel lateral ou colisao com os arquivos.
-        shortcuts = pu::ui::elm::TextBlock::New(34, 635,
-            "A ABRIR     B VOLTAR     Y ATUALIZAR     X NOVA PASTA");
-        shortcuts->SetColor(pu::ui::Color(190,203,222,255));
+        // Controles em botoes separados, organizados em duas linhas.
+        const auto key_text = pu::ui::Color(245,248,255,255);
+        const auto key_bg = pu::ui::Color(34,48,67,255);
+        key_a = pu::ui::elm::Button::New(24, 580, 230, 42, "A  |  ABRIR", key_text, key_bg);
+        key_b = pu::ui::elm::Button::New(266, 580, 230, 42, "B  |  VOLTAR", key_text, key_bg);
+        key_y = pu::ui::elm::Button::New(508, 580, 230, 42, "Y  |  ATUALIZAR", key_text, key_bg);
+        key_x = pu::ui::elm::Button::New(750, 580, 230, 42, "X  |  NOVA PASTA", key_text, key_bg);
+        key_l = pu::ui::elm::Button::New(992, 580, 264, 42, "L  |  RENOMEAR", key_text, key_bg);
+        key_r = pu::ui::elm::Button::New(24, 632, 230, 42, "R  |  EXCLUIR", key_text, key_bg);
+        key_zl = pu::ui::elm::Button::New(266, 632, 230, 42, "ZL  |  COPIAR", key_text, key_bg);
+        key_zr = pu::ui::elm::Button::New(508, 632, 230, 42, "ZR  |  MOVER", key_text, key_bg);
+        key_minus = pu::ui::elm::Button::New(750, 632, 230, 42, "-  |  INFORMACOES", key_text, key_bg);
 
-        transfer_button = pu::ui::elm::Button::New(900, 624, 356, 70,
+        transfer_button = pu::ui::elm::Button::New(992, 632, 264, 42,
             "TRANSFERENCIAS FTP", pu::ui::Color(255,255,255,255),
             pu::ui::Color(35,111,190,255));
         transfer_button->SetOnClick([this]() {
@@ -432,7 +440,7 @@ public:
                 (unsigned long long)stats.bytes_received,
                 (unsigned long long)stats.bytes_sent);
             content = summary;
-            layout->shortcuts->SetText("FTP ANONIMO  |  USE SOMENTE NA REDE LOCAL CONFIAVEL");
+
         } else {
             content = "Seus arquivos\n\n";
             if (R_FAILED(mount_result)) {
