@@ -159,14 +159,39 @@ class _ConnectPageState extends State<ConnectPage> {
   }
 
   Future<void> _connect(AppController app) async {
+    FocusScope.of(context).unfocus();
     final settings = _read(app);
     if (settings == null) return;
-    await app.connect(settings);
-    if (!mounted) return;
-    if (app.connected) {
-      widget.go(2);
-    } else {
-      showMsg(context, app.status);
+
+    setState(() {
+      _testResult = null;
+      _testing = true;
+    });
+    try {
+      await app.connect(settings);
+      if (!mounted) return;
+      if (app.connected) {
+        widget.go(2);
+      } else {
+        final message = app.status.trim().isEmpty
+            ? 'Não foi possível conectar. Confira o IP, a porta 5000 e se o FTPD está aberto no Switch.'
+            : app.status;
+        setState(() {
+          _testOk = false;
+          _testResult = message;
+        });
+        showMsg(context, message);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      final message = 'Falha ao conectar: $e';
+      setState(() {
+        _testOk = false;
+        _testResult = message;
+      });
+      showMsg(context, message);
+    } finally {
+      if (mounted) setState(() => _testing = false);
     }
   }
 
