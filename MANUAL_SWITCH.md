@@ -16,7 +16,7 @@
 
 ## Segurança e limitações
 - O FTP desta versão não usa criptografia nem autenticação. Use somente em uma rede local confiável; não exponha a porta 5000 à internet.
-- O servidor aceita uma sessão de controle por vez.
+- O servidor está configurado para até quatro sessões de controle simultâneas; esse limite ainda precisa ser validado no console físico.
 - Upload é gravado em arquivo temporário e finalizado por renomeação; arquivos parciais são removidos quando a transferência falha.
 - A substituição de arquivo deve ser confirmada no aplicativo antes do envio.
 - O servidor integrado foi compilado no GitHub Actions, mas ainda precisa de teste em um Nintendo Switch físico. A compilação não comprova conectividade Wi-Fi, estabilidade ou compatibilidade completa.
