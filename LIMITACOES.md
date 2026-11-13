@@ -2,7 +2,7 @@
 
 ## Nintendo Switch / servidor FTP integrado
 - O NRO agora contém código de servidor FTP integrado, iniciado ao abrir o Switch File Hub; não deve ser necessário abrir um ftpd separado.
-- O servidor usa a porta TCP 5000, modo passivo FTP e uma sessão de controle por vez.
+- O servidor usa a porta TCP 5000, modo passivo FTP e está configurado para até quatro sessões de controle simultâneas.
 - O acesso é anônimo e o FTP não é criptografado. Use apenas em rede local confiável; não encaminhe a porta para a internet.
 - O NRO precisa permanecer aberto durante o uso. Fechar o homebrew encerra o servidor.
 - A identificação automática do IP depende da interface de rede ativa; se o endereço não aparecer, consulte o IP nas configurações de Internet do Switch ou use a descoberta de dispositivos do cliente.
@@ -14,7 +14,7 @@
 
 ## Cliente Android / Windows
 - O código Flutter está empacotado em `SwitchFileHub_1.0_FINAL.zip`; o cliente usa FTP passivo, MLSD/LIST, STOR/RETR e descoberta de servidores por banner FTP na porta configurada.
-- A compilação e os testes do cliente Android/Windows precisam ser confirmados pelos workflows GitHub Actions após a inclusão da branch de integração.
+- O workflow do cliente Android/Windows foi iniciado na branch de integração; os resultados finais dos jobs de compilação ainda precisam ser confirmados. Mesmo com build aprovado, a conexão real com o NRO depende de teste em dispositivos físicos.
 - Android: seleção de arquivos e destino de downloads dependem das restrições de armazenamento do Android (Scoped Storage); validar em dispositivo real.
 - Windows: alvo x64.
 - Sem retomada automática de transferência interrompida.
