@@ -1,4 +1,5 @@
 name: Build Switch File Hub
+# Rebuild Android APK against the current development branch.
 
 on:
   push:
