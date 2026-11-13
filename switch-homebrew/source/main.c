@@ -8,6 +8,10 @@
 #include <errno.h>
 #include "ftp_server.h"
 
+/* Avoid an extra heap allocation for fsdev current-directory tracking.
+   Every filesystem path in this app is absolute (sdmc:/...). */
+extern bool __nx_fsdev_support_cwd;
+
 #define MAX_ENTRIES 128
 #define NAME_LENGTH 256
 #define PATH_LENGTH 1024
@@ -64,8 +68,13 @@ static void diagnose_mount_error(Result rc) {
     exfat_query_ok = R_SUCCEEDED(exfat_rc);
     mount_module = (u32)R_MODULE(rc);
     mount_description = (u32)R_DESCRIPTION(rc);
-    snprintf(directory_status, sizeof(directory_status),
-             "Nao foi possivel acessar o microSD.");
+    if (R_MODULE(rc) == Module_Libnx && R_DESCRIPTION(rc) == LibnxError_OutOfMemory) {
+        snprintf(directory_status, sizeof(directory_status),
+                 "Falha de memoria ao registrar o dispositivo SD (libnx).");
+    } else {
+        snprintf(directory_status, sizeof(directory_status),
+                 "Falha ao abrir o sistema de arquivos do microSD.");
+    }
 }
 
 static void load_directory(void) {
@@ -353,8 +362,11 @@ static void draw_ui(void) {
 int main(int argc, char **argv) {
     (void)argc;
     (void)argv;
-    consoleInit(NULL);
+    /* Mount SD before initializing the UI, and avoid fsdev CWD heap allocation.
+       This specifically addresses libnx result 0x559 (OutOfMemory) on SD mount. */
+    __nx_fsdev_support_cwd = false;
     mount_result = fsdevMountSdmc();
+    consoleInit(NULL);
     if (R_SUCCEEDED(mount_result)) {
         load_directory();
         ftpServerStart();
