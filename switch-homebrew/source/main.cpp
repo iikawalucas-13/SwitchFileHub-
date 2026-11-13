@@ -409,13 +409,13 @@ public:
             ftpServerGetStats(&stats);
             char summary[768];
             snprintf(summary, sizeof(summary),
-                "PAINEL DE TRANSFERENCIAS\\n\\n"
-                "STATUS DO SERVIDOR   %s\\n\\n"
-                "TRANSFERENCIAS ATIVAS       %u\\n"
-                "CONCLUIDAS                  %llu\\n"
-                "COM FALHA                   %llu\\n\\n"
-                "DADOS RECEBIDOS NO SWITCH   %llu bytes\\n"
-                "DADOS ENVIADOS PELO SWITCH  %llu bytes\\n\\n"
+                "PAINEL DE TRANSFERENCIAS\n\n"
+                "STATUS DO SERVIDOR   %s\n\n"
+                "TRANSFERENCIAS ATIVAS       %u\n"
+                "CONCLUIDAS                  %llu\n"
+                "COM FALHA                   %llu\n\n"
+                "DADOS RECEBIDOS NO SWITCH   %llu bytes\n"
+                "DADOS ENVIADOS PELO SWITCH  %llu bytes\n\n"
                 "Os numeros mostram somente esta sessao e reiniciam ao fechar o app.",
                 fs == 2 ? "ONLINE" : (fs < 0 ? "ERRO" : "OFFLINE"),
                 (unsigned int)stats.active,
@@ -424,12 +424,12 @@ public:
                 (unsigned long long)stats.bytes_received,
                 (unsigned long long)stats.bytes_sent);
             content = summary;
-            layout->shortcuts->SetText("TRANSFERENCIAS FTP\\n\\nO Switch File Hub contabiliza os arquivos enviados e recebidos durante esta sessao.\\n\\nDICA DE CONEXAO\\nDigite o endereco IP exibido no cartao FTP em um cliente FTP conectado a mesma rede Wi-Fi.\\n\\nSeguranca\\nO FTP e anonimo e sem criptografia. Use somente em rede local confiavel.");
+            layout->shortcuts->SetText("TRANSFERENCIAS FTP\n\nO Switch File Hub contabiliza os arquivos enviados e recebidos durante esta sessao.\n\nDICA DE CONEXAO\nDigite o endereco IP exibido no cartao FTP em um cliente FTP conectado a mesma rede Wi-Fi.\n\nSeguranca\nO FTP e anonimo e sem criptografia. Use somente em rede local confiavel.");
         } else {
-            content = "ARQUIVOS E PASTAS\\n\\n";
+            content = "ARQUIVOS E PASTAS\n\n";
             if (R_FAILED(mount_result)) {
                 content += directory_status;
-                content += "\\n\\nO cartao nao foi montado. Reinicie o console e tente novamente. Se continuar, envie o codigo de erro para diagnostico.";
+                content += "\n\nO cartao nao foi montado. Reinicie o console e tente novamente. Se continuar, envie o codigo de erro para diagnostico.";
             } else if (entry_count == 0) {
                 content += "ESTA PASTA ESTA VAZIA.";
             } else {
@@ -439,15 +439,15 @@ public:
                     content += (i == selected ? "  >  " : "     ");
                     content += entries[i].is_dir ? "[PASTA]  " : "[ARQUIVO]  ";
                     content += entries[i].name;
-                    content += "\\n";
+                    content += "\n";
                 }
                 char page[80];
-                snprintf(page, sizeof(page), "\\nPagina %d  |  %d item(ns)", selected / PAGE_SIZE + 1, entry_count);
+                snprintf(page, sizeof(page), "\nPagina %d  |  %d item(ns)", selected / PAGE_SIZE + 1, entry_count);
                 content += page;
             }
-            content += "\\n\\n";
+            content += "\n\n";
             content += directory_status;
-            layout->shortcuts->SetText("ATALHOS\\n\\nA  Abrir item\\nB  Voltar pasta\\nY  Atualizar lista\\nX  Nova pasta\\nL  Renomear\\nR  Excluir\\nZL  Copiar arquivo\\nZR  Mover arquivo\\n-  Informacoes\\n\\nDICA\\nUse o FTP na mesma rede Wi-Fi para acessar os arquivos pelo celular ou computador.");
+            layout->shortcuts->SetText("ATALHOS\n\nA  Abrir item\nB  Voltar pasta\nY  Atualizar lista\nX  Nova pasta\nL  Renomear\nR  Excluir\nZL  Copiar arquivo\nZR  Mover arquivo\n-  Informacoes\n\nDICA\nUse o FTP na mesma rede Wi-Fi para acessar os arquivos pelo celular ou computador.");
         }
         layout->files->SetText(content);
     }
