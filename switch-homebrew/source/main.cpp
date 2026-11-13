@@ -2,6 +2,7 @@
 #include <pu/Plutonium>
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <dirent.h>
 #include <stdio.h>
 #include <string.h>
