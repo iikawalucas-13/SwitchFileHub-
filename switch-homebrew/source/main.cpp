@@ -323,42 +323,43 @@ public:
     pu::ui::elm::Button::Ref status, ftp, transfer_button;
     PU_SMART_CTOR(HubLayout)
     HubLayout() {
-        this->SetBackgroundColor(pu::ui::Color(10, 14, 25, 255));
+        // Visual proprio inspirado na simplicidade do hbmenu e do NX-Shell.
+        this->SetBackgroundColor(pu::ui::Color(34, 36, 45, 255));
 
-        header = pu::ui::elm::TextBlock::New(42, 24, "SWITCH FILE HUB");
-        header->SetColor(pu::ui::Color(248, 250, 255, 255));
-        subtitle = pu::ui::elm::TextBlock::New(44, 68, "CENTRAL DE ARQUIVOS  |  NINTENDO SWITCH");
-        subtitle->SetColor(pu::ui::Color(135, 155, 190, 255));
+        header = pu::ui::elm::TextBlock::New(42, 24, "Switch File Hub");
+        header->SetColor(pu::ui::Color(255, 255, 255, 255));
+        subtitle = pu::ui::elm::TextBlock::New(44, 70, "GERENCIADOR DE ARQUIVOS  /  NINTENDO SWITCH");
+        subtitle->SetColor(pu::ui::Color(192, 192, 195, 255));
 
-        status = pu::ui::elm::Button::New(42, 112, 430, 66,
-            "MICROSD  |  VERIFICANDO...", pu::ui::Color(245,248,255,255),
-            pu::ui::Color(27,43,62,255));
+        status = pu::ui::elm::Button::New(42, 116, 410, 62,
+            "MICROSD  |  VERIFICANDO...", pu::ui::Color(255,255,255,255),
+            pu::ui::Color(55,59,70,255));
         status->SetOnClick([]() {});
-        ftp = pu::ui::elm::Button::New(490, 112, 738, 66,
-            "FTP  |  DESLIGADO", pu::ui::Color(245,248,255,255),
-            pu::ui::Color(31,39,67,255));
+        ftp = pu::ui::elm::Button::New(470, 116, 768, 62,
+            "FTP  |  DESLIGADO", pu::ui::Color(255,255,255,255),
+            pu::ui::Color(55,59,70,255));
         ftp->SetOnClick([]() {});
 
-        path = pu::ui::elm::TextBlock::New(48, 204, "LOCAL  /  sdmc:/");
-        path->SetColor(pu::ui::Color(130, 205, 255, 255));
+        path = pu::ui::elm::TextBlock::New(48, 210, "MICROSD   /   sdmc:/");
+        path->SetColor(pu::ui::Color(96, 204, 204, 255));
 
-        files = pu::ui::elm::TextBlock::New(54, 250, "ARQUIVOS E PASTAS\n\nCarregando...");
-        files->SetColor(pu::ui::Color(238, 242, 250, 255));
+        files = pu::ui::elm::TextBlock::New(54, 254, "Seus arquivos\n\nCarregando...");
+        files->SetColor(pu::ui::Color(245, 246, 248, 255));
 
-        shortcuts = pu::ui::elm::TextBlock::New(870, 252,
-            "ATALHOS\n\nA  Abrir item\nB  Voltar pasta\nY  Atualizar lista\nX  Nova pasta\nL  Renomear\nR  Excluir\nZL  Copiar arquivo\nZR  Mover arquivo\n-  Informacoes\n\nDICA\nUse o FTP na mesma rede Wi-Fi para acessar os arquivos pelo celular ou computador.");
-        shortcuts->SetColor(pu::ui::Color(150, 170, 205, 255));
+        shortcuts = pu::ui::elm::TextBlock::New(900, 254,
+            "NAVEGACAO\n\nA   Abrir selecionado\nB   Pasta anterior\nY   Atualizar\n\nACOES\n\nX   Nova pasta\nL   Renomear\nR   Excluir\nZL  Copiar\nZR  Mover\n-   Detalhes\n\nCONEXAO\n\nUse o IP do cartao FTP\nno celular ou computador,\nna mesma rede Wi-Fi.");
+        shortcuts->SetColor(pu::ui::Color(192, 192, 195, 255));
 
-        footer = pu::ui::elm::TextBlock::New(44, 662,
-            "SWITCH FILE HUB  0.6.0     •     A: SELECIONAR     B: VOLTAR     +: SAIR");
-        footer->SetColor(pu::ui::Color(125, 145, 175, 255));
+        footer = pu::ui::elm::TextBlock::New(44, 670,
+            "A  ABRIR     B  VOLTAR     Y  ATUALIZAR                                      +  SAIR");
+        footer->SetColor(pu::ui::Color(160, 165, 176, 255));
 
-        transfer_button = pu::ui::elm::Button::New(940, 626, 288, 58,
-            "VER TRANSFERENCIAS", pu::ui::Color(255,255,255,255),
-            pu::ui::Color(63,88,180,255));
+        transfer_button = pu::ui::elm::Button::New(944, 620, 294, 58,
+            "TRANSFERENCIAS", pu::ui::Color(24, 36, 39, 255),
+            pu::ui::Color(96, 204, 204, 255));
         transfer_button->SetOnClick([this]() {
             g_show_transfers = !g_show_transfers;
-            transfer_button->SetContent(g_show_transfers ? "VER ARQUIVOS" : "VER TRANSFERENCIAS");
+            transfer_button->SetContent(g_show_transfers ? "VOLTAR AOS ARQUIVOS" : "TRANSFERENCIAS");
         });
 
         this->Add(header);
@@ -380,18 +381,18 @@ public:
     void refreshText() {
         if (R_SUCCEEDED(mount_result)) {
             char s[180];
-            snprintf(s, sizeof(s), "MICROSD  |  CONECTADO  |  %d ITENS", entry_count);
+            snprintf(s, sizeof(s), "MICROSD  |  PRONTO  |  %d ITENS", entry_count);
             layout->status->SetContent(s);
         } else {
             char s[180];
-            snprintf(s, sizeof(s), "MICROSD  |  ERRO 0x%08X", (unsigned int)mount_result);
+            snprintf(s, sizeof(s), "MICROSD  |  NAO DISPONIVEL  |  0x%08X", (unsigned int)mount_result);
             layout->status->SetContent(s);
         }
 
         int fs = ftpServerState();
         if (fs == 2) {
             char ftp_text[180];
-            snprintf(ftp_text, sizeof(ftp_text), "FTP  |  ATIVO  |  %s:5000  |  ANONIMO", ftpServerIp());
+            snprintf(ftp_text, sizeof(ftp_text), "FTP  |  ONLINE  |  %s:5000  |  REDE LOCAL", ftpServerIp());
             layout->ftp->SetContent(ftp_text);
         } else if (fs == 1) {
             layout->ftp->SetContent("FTP  |  INICIANDO SERVIDOR...");
@@ -401,7 +402,7 @@ public:
             layout->ftp->SetContent("FTP  |  DESLIGADO");
         }
 
-        layout->path->SetText(std::string("LOCAL  /  ") + current_path);
+        layout->path->SetText(std::string("MICROSD   /   ") + current_path);
 
         std::string content;
         if (g_show_transfers) {
@@ -426,18 +427,18 @@ public:
             content = summary;
             layout->shortcuts->SetText("TRANSFERENCIAS FTP\n\nO Switch File Hub contabiliza os arquivos enviados e recebidos durante esta sessao.\n\nDICA DE CONEXAO\nDigite o endereco IP exibido no cartao FTP em um cliente FTP conectado a mesma rede Wi-Fi.\n\nSeguranca\nO FTP e anonimo e sem criptografia. Use somente em rede local confiavel.");
         } else {
-            content = "ARQUIVOS E PASTAS\n\n";
+            content = "Seus arquivos\n\n";
             if (R_FAILED(mount_result)) {
                 content += directory_status;
                 content += "\n\nO cartao nao foi montado. Reinicie o console e tente novamente. Se continuar, envie o codigo de erro para diagnostico.";
             } else if (entry_count == 0) {
-                content += "ESTA PASTA ESTA VAZIA.";
+                content += "Esta pasta esta vazia.";
             } else {
                 int first = (selected / PAGE_SIZE) * PAGE_SIZE;
                 int last = std::min(first + PAGE_SIZE, entry_count);
                 for (int i = first; i < last; i++) {
                     content += (i == selected ? "  >  " : "     ");
-                    content += entries[i].is_dir ? "[PASTA]  " : "[ARQUIVO]  ";
+                    content += entries[i].is_dir ? "[DIR]   " : "[FILE]  ";
                     content += entries[i].name;
                     content += "\n";
                 }
@@ -447,7 +448,7 @@ public:
             }
             content += "\n\n";
             content += directory_status;
-            layout->shortcuts->SetText("ATALHOS\n\nA  Abrir item\nB  Voltar pasta\nY  Atualizar lista\nX  Nova pasta\nL  Renomear\nR  Excluir\nZL  Copiar arquivo\nZR  Mover arquivo\n-  Informacoes\n\nDICA\nUse o FTP na mesma rede Wi-Fi para acessar os arquivos pelo celular ou computador.");
+            layout->shortcuts->SetText("NAVEGACAO\n\nA   Abrir selecionado\nB   Pasta anterior\nY   Atualizar\n\nACOES\n\nX   Nova pasta\nL   Renomear\nR   Excluir\nZL  Copiar\nZR  Mover\n-   Detalhes\n\nCONEXAO\n\nAcesse pelo celular ou\ncomputador usando o IP\ndo cartao FTP.");
         }
         layout->files->SetText(content);
     }
