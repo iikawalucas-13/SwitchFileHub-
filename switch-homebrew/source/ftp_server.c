@@ -199,12 +199,18 @@ static void serve_client(int control) {
         else if (!strcmp(line,"PWD") || !strcmp(line,"XPWD")) {
             snprintf(second,sizeof(second),"257 \"%s\" is current directory\r\n",cwd); reply(control,second);
         } else if (!strcmp(line,"CWD") || !strcmp(line,"CDUP")) {
-            const char *target = !strcmp(line,"CDUP") ? ".." : arg;
+            const char *target = !strcmp(line,"CDUP") ? "/" : arg;
+            char candidate[FTP_LINE];
+            if (!strcmp(line,"CDUP")) {
+                snprintf(candidate,sizeof(candidate),"%s",cwd);
+                char *parent=strrchr(candidate, '/');
+                if (parent && parent!=candidate) *parent=0; else strcpy(candidate,"/");
+                target=candidate;
+            }
             if (!ftp_virtual_path(cwd,target,path,sizeof(path))) { reply(control,"550 Invalid path\r\n"); continue; }
             struct stat st;
             if (stat(path,&st)==0 && S_ISDIR(st.st_mode)) {
                 if (target[0]=='/') snprintf(cwd,sizeof(cwd),"%s",target);
-                else if (!strcmp(target,"..")) { char *s=strrchr(cwd,'/'); if (s && s!=cwd) *s=0; else strcpy(cwd,"/"); }
                 else { if (strcmp(cwd,"/")) strncat(cwd,"/",sizeof(cwd)-strlen(cwd)-1); strncat(cwd,target,sizeof(cwd)-strlen(cwd)-1); }
                 reply(control,"250 Directory changed\r\n");
             } else reply(control,"550 Directory unavailable\r\n");
@@ -235,7 +241,7 @@ static void serve_client(int control) {
         } else if (!strcmp(line,"DELE") || !strcmp(line,"RMD") || !strcmp(line,"XRMD")) {
             if (!ftp_virtual_path(cwd,arg,path,sizeof(path))) { reply(control,"550 Invalid path\r\n"); continue; }
             struct stat st;
-            if (stat(path,&st)!=0 || (S_ISDIR(st.st_mode) && strcmp(line,"RMD") && strcmp(line,"XRMD"))) reply(control,"550 Invalid target\r\n");
+            if (stat(path,&st)!=0 || (!strcmp(line,"DELE") && S_ISDIR(st.st_mode)) || ((!strcmp(line,"RMD") || !strcmp(line,"XRMD")) && !S_ISDIR(st.st_mode))) reply(control,"550 Invalid target\r\n");
             else reply(control,(S_ISDIR(st.st_mode) ? rmdir(path) : remove(path))==0 ? "250 Deleted\r\n" : "550 Delete failed\r\n");
         } else if (!strcmp(line,"SIZE")) {
             struct stat st;
@@ -256,15 +262,15 @@ static void serve_client(int control) {
     close(control);
 }
 
-static void *server_main(void *unused) {
+static void server_main(void *unused) {
     (void)unused;
     struct sockaddr_in addr;
     listen_fd=socket(AF_INET,SOCK_STREAM,0);
-    if (listen_fd<0) { server_state=-1; return NULL; }
+    if (listen_fd<0) { server_state=-1; return; }
     int yes=1; setsockopt(listen_fd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(yes));
     memset(&addr,0,sizeof(addr)); addr.sin_family=AF_INET; addr.sin_addr.s_addr=htonl(INADDR_ANY); addr.sin_port=htons(FTP_PORT);
     if (bind(listen_fd,(struct sockaddr*)&addr,sizeof(addr))<0 || listen(listen_fd,2)<0) {
-        close(listen_fd); listen_fd=-1; server_state=-1; return NULL;
+        close(listen_fd); listen_fd=-1; server_state=-1; return;
     }
     server_state=2;
     while (server_running) {
@@ -274,7 +280,7 @@ static void *server_main(void *unused) {
     }
     if (listen_fd>=0) { close(listen_fd); listen_fd=-1; }
     server_state=0;
-    return NULL;
+    return;
 }
 
 Result ftpServerStart(void) {
@@ -303,7 +309,7 @@ Result ftpServerStart(void) {
 }
 
 void ftpServerStop(void) {
-    if (!server_running) { if (server_state==-1) socketExit(); return; }
+    if (!server_running) return;
     server_running=false;
     if (listen_fd>=0) shutdown(listen_fd,SHUT_RDWR);
     threadWaitForExit(&server_thread);
