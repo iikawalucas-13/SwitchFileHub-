@@ -14,12 +14,22 @@
 #define FTP_PORT 5000
 #define FTP_LINE 1024
 #define FTP_IO 16384
+#define FTP_MAX_CLIENTS 4
 
 static Thread server_thread;
 static volatile bool server_running = false;
 static volatile int server_state = 0; /* 0 stopped, 1 starting, 2 ready, -1 error */
 static int listen_fd = -1;
 static char server_ip[32] = "IP indisponivel";
+typedef struct {
+    Thread thread;
+    volatile bool done;
+    bool in_use;
+    int control_fd;
+    int data_listener;
+    int data_fd;
+} FtpWorker;
+static FtpWorker workers[FTP_MAX_CLIENTS];
 
 static int send_all(int fd, const char *buf, size_t len) {
     size_t sent = 0;
@@ -116,19 +126,21 @@ static int open_passive(int control, int *data_listener) {
     return 0;
 }
 
-static int accept_data(int *data_listener) {
-    if (*data_listener < 0) return -1;
-    int fd = accept(*data_listener, NULL, NULL);
-    close(*data_listener);
-    *data_listener = -1;
+static int accept_data(FtpWorker *worker) {
+    if (worker->data_listener < 0) return -1;
+    int fd = accept(worker->data_listener, NULL, NULL);
+    close(worker->data_listener);
+    worker->data_listener = -1;
+    worker->data_fd = fd;
     return fd;
 }
 
-static void list_directory(int control, int *data_listener, const char *path, bool mlsd) {
+static void list_directory(FtpWorker *worker, const char *path, bool mlsd) {
+    int control = worker->control_fd;
     DIR *dir = opendir(path);
     if (!dir) { reply(control, "550 Directory unavailable\r\n"); return; }
     reply(control, "150 Opening data connection\r\n");
-    int data = accept_data(data_listener);
+    int data = accept_data(worker);
     if (data < 0) { closedir(dir); reply(control, "425 Data connection failed\r\n"); return; }
     struct dirent *item;
     char full[FTP_LINE], line[FTP_LINE];
@@ -153,7 +165,8 @@ static void list_directory(int control, int *data_listener, const char *path, bo
     reply(control, "226 Directory send OK\r\n");
 }
 
-static void transfer_file(int control, int *data_listener, const char *path, bool upload) {
+static void transfer_file(FtpWorker *worker, const char *path, bool upload) {
+    int control = worker->control_fd;
     struct stat st;
     char temporary[FTP_LINE];
     const char *write_path = path;
@@ -196,6 +209,7 @@ static void transfer_file(int control, int *data_listener, const char *path, boo
     if (fclose(file) != 0) ok = false;
     shutdown(data, SHUT_RDWR);
     close(data);
+    worker->data_fd = -1;
     if (upload) {
         if (ok) {
             if (rename(write_path, path) != 0) { remove(write_path); ok = false; }
@@ -205,10 +219,10 @@ static void transfer_file(int control, int *data_listener, const char *path, boo
     }
     reply(control, ok ? "226 Transfer complete\r\n" : "451 Transfer failed; partial upload removed\r\n");
 }
-static void serve_client(int control) {
+static void serve_client(FtpWorker *worker) {
+    int control = worker->control_fd;
     char line[FTP_LINE], cwd[FTP_LINE] = "/", path[FTP_LINE], second[FTP_LINE];
     char rename_from[FTP_LINE] = "";
-    int data_listener = -1;
     reply(control, "220 Switch File Hub FTP ready\r\n");
     while (server_running && read_line(control, line, sizeof(line))) {
         char *arg = strchr(line, ' ');
@@ -241,12 +255,12 @@ static void serve_client(int control) {
                 reply(control,"250 Directory changed\r\n");
             } else reply(control,"550 Directory unavailable\r\n");
         } else if (!strcmp(line,"PASV")) {
-            if (data_listener >= 0) close(data_listener);
-            data_listener=-1;
-            if (open_passive(control,&data_listener)!=0) reply(control,"425 Cannot open passive listener\r\n");
+            if (worker->data_listener >= 0) close(worker->data_listener);
+            worker->data_listener=-1;
+            if (open_passive(control,&worker->data_listener)!=0) reply(control,"425 Cannot open passive listener\r\n");
         } else if (!strcmp(line,"EPSV")) {
-            if (data_listener >= 0) close(data_listener);
-            data_listener=-1;
+            if (worker->data_listener >= 0) close(worker->data_listener);
+            worker->data_listener=-1;
             struct sockaddr_in a; socklen_t alen=sizeof(a);
             int fd=socket(AF_INET,SOCK_STREAM,0);
             memset(&a,0,sizeof(a)); a.sin_family=AF_INET; a.sin_addr.s_addr=htonl(INADDR_ANY);
@@ -258,10 +272,10 @@ static void serve_client(int control) {
             }
         } else if (!strcmp(line,"LIST") || !strcmp(line,"MLSD")) {
             if (!ftp_virtual_path(cwd,arg,path,sizeof(path))) { reply(control,"550 Invalid path\r\n"); continue; }
-            list_directory(control,&data_listener,path,!strcmp(line,"MLSD"));
+            list_directory(worker,path,!strcmp(line,"MLSD"));
         } else if (!strcmp(line,"RETR") || !strcmp(line,"STOR")) {
             if (!ftp_virtual_path(cwd,arg,path,sizeof(path))) { reply(control,"550 Invalid path\r\n"); continue; }
-            transfer_file(control,&data_listener,path,!strcmp(line,"STOR"));
+            transfer_file(worker,path,!strcmp(line,"STOR"));
         } else if (!strcmp(line,"MKD") || !strcmp(line,"XMKD")) {
             if (!ftp_virtual_path(cwd,arg,path,sizeof(path))) { reply(control,"550 Invalid path\r\n"); continue; }
             reply(control,mkdir(path,0777)==0 ? "257 Directory created\r\n" : "550 Cannot create directory\r\n");
@@ -284,9 +298,25 @@ static void serve_client(int control) {
         else if (!strcmp(line,"ABOR")) reply(control,"226 Abort acknowledged\r\n");
         else reply(control,"502 Command not implemented\r\n");
     }
-    if (data_listener >= 0) close(data_listener);
+    if (worker->data_listener >= 0) close(worker->data_listener);
+    worker->data_listener = -1;
     shutdown(control,SHUT_RDWR);
     close(control);
+    worker->control_fd = -1;
+}
+
+static void client_main(void *arg) {
+    FtpWorker *worker = (FtpWorker *)arg;
+    serve_client(worker);
+    worker->done = true;
+}
+
+static void reap_worker(FtpWorker *worker) {
+    if (worker->in_use && worker->done) {
+        threadWaitForExit(&worker->thread);
+        threadClose(&worker->thread);
+        worker->in_use = false;
+    }
 }
 
 static void server_main(void *unused) {
@@ -296,24 +326,55 @@ static void server_main(void *unused) {
     if (listen_fd<0) { server_state=-1; return; }
     int yes=1; setsockopt(listen_fd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(yes));
     memset(&addr,0,sizeof(addr)); addr.sin_family=AF_INET; addr.sin_addr.s_addr=htonl(INADDR_ANY); addr.sin_port=htons(FTP_PORT);
-    if (bind(listen_fd,(struct sockaddr*)&addr,sizeof(addr))<0 || listen(listen_fd,2)<0) {
+    if (bind(listen_fd,(struct sockaddr*)&addr,sizeof(addr))<0 || listen(listen_fd,FTP_MAX_CLIENTS)<0) {
         close(listen_fd); listen_fd=-1; server_state=-1; return;
     }
     server_state=2;
     while (server_running) {
         int client=accept(listen_fd,NULL,NULL);
         if (client<0) { if (!server_running) break; continue; }
-        serve_client(client);
+        for (int i=0;i<FTP_MAX_CLIENTS;i++) reap_worker(&workers[i]);
+        FtpWorker *slot=NULL;
+        for (int i=0;i<FTP_MAX_CLIENTS;i++) if (!workers[i].in_use) { slot=&workers[i]; break; }
+        if (!slot) {
+            send_all(client,"421 Too many clients; try again later\\r\\n",42);
+            close(client);
+            continue;
+        }
+        slot->control_fd=client;
+        slot->data_listener=-1;
+        slot->data_fd=-1;
+        slot->done=false;
+        slot->in_use=true;
+        Result rc=threadCreate(&slot->thread,client_main,slot,NULL,0x8000,0x2D,-2);
+        if (R_FAILED(rc) || R_FAILED(threadStart(&slot->thread))) {
+            shutdown(client,SHUT_RDWR);
+            close(client);
+            slot->control_fd=-1;
+            slot->in_use=false;
+            if (R_SUCCEEDED(rc)) threadClose(&slot->thread);
+        }
+    }
+    for (int i=0;i<FTP_MAX_CLIENTS;i++) {
+        FtpWorker *worker=&workers[i];
+        if (!worker->in_use) continue;
+        if (worker->control_fd>=0) shutdown(worker->control_fd,SHUT_RDWR);
+        if (worker->data_listener>=0) shutdown(worker->data_listener,SHUT_RDWR);
+        if (worker->data_fd>=0) shutdown(worker->data_fd,SHUT_RDWR);
+        threadWaitForExit(&worker->thread);
+        threadClose(&worker->thread);
+        worker->in_use=false;
     }
     if (listen_fd>=0) { close(listen_fd); listen_fd=-1; }
     server_state=0;
-    return;
 }
 
 Result ftpServerStart(void) {
     if (server_running) return 0;
     server_state=1;
-    Result rc=socketInitializeDefault();
+    SocketInitConfig socket_config = *socketGetDefaultInitConfig();
+    socket_config.num_bsd_sessions = 4;
+    Result rc=socketInitialize(&socket_config);
     if (R_FAILED(rc)) { server_state=-1; return rc; }
     /* Determine the LAN interface address without sending any packets. */
     int probe=socket(AF_INET,SOCK_DGRAM,0);
