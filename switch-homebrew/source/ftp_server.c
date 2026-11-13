@@ -155,31 +155,56 @@ static void list_directory(int control, int *data_listener, const char *path, bo
 
 static void transfer_file(int control, int *data_listener, const char *path, bool upload) {
     struct stat st;
-    if (upload && stat(path, &st) == 0) { reply(control, "553 File already exists; overwrite disabled\r\n"); return; }
-    FILE *file = upload ? fopen(path, "wbx") : fopen(path, "rb");
+    char temporary[FTP_LINE];
+    const char *write_path = path;
+    if (upload) {
+        if (stat(path, &st) == 0 && S_ISDIR(st.st_mode)) {
+            reply(control, "550 Destination is a directory\r\n");
+            return;
+        }
+        if (snprintf(temporary, sizeof(temporary), "%s.sfh-uploading", path) >= (int)sizeof(temporary) ||
+            stat(temporary, &st) == 0) {
+            reply(control, "550 Upload temporary file already exists\r\n");
+            return;
+        }
+        write_path = temporary;
+    }
+    FILE *file = upload ? fopen(write_path, "wbx") : fopen(path, "rb");
     if (!file) { reply(control, "550 File unavailable\r\n"); return; }
     reply(control, "150 Opening data connection\r\n");
     int data = accept_data(data_listener);
-    if (data < 0) { fclose(file); if (upload) remove(path); reply(control, "425 Data connection failed\r\n"); return; }
+    if (data < 0) {
+        fclose(file);
+        if (upload) remove(write_path);
+        reply(control, "425 Data connection failed\r\n");
+        return;
+    }
     char buffer[FTP_IO];
     bool ok = true;
     if (upload) {
         ssize_t n;
-        while ((n = recv(data, buffer, sizeof(buffer), 0)) > 0)
+        while ((n = recv(data, buffer, sizeof(buffer), 0)) > 0) {
             if (fwrite(buffer, 1, (size_t)n, file) != (size_t)n) { ok = false; break; }
+        }
     } else {
         size_t n;
-        while ((n = fread(buffer, 1, sizeof(buffer), file)) > 0)
+        while ((n = fread(buffer, 1, sizeof(buffer), file)) > 0) {
             if (send_all(data, buffer, n) != 0) { ok = false; break; }
+        }
         if (ferror(file)) ok = false;
     }
-    fclose(file);
+    if (fclose(file) != 0) ok = false;
     shutdown(data, SHUT_RDWR);
     close(data);
-    if (upload && !ok) remove(path);
-    reply(control, ok ? "226 Transfer complete\r\n" : "451 Transfer failed\r\n");
+    if (upload) {
+        if (ok) {
+            if (rename(write_path, path) != 0) { remove(write_path); ok = false; }
+        } else {
+            remove(write_path);
+        }
+    }
+    reply(control, ok ? "226 Transfer complete\r\n" : "451 Transfer failed; partial upload removed\r\n");
 }
-
 static void serve_client(int control) {
     char line[FTP_LINE], cwd[FTP_LINE] = "/", path[FTP_LINE], second[FTP_LINE];
     char rename_from[FTP_LINE] = "";
