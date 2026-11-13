@@ -4,7 +4,7 @@
 .SUFFIXES:
 
 ifeq ($(strip $(DEVKITPRO)),)
-$(error "Please set DEVKITPRO in your environment.)
+$(error "Please set DEVKITPRO in your environment.")
 endif
 
 TOPDIR ?= $(CURDIR)
