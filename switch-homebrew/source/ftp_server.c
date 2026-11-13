@@ -22,6 +22,12 @@ static volatile bool server_running = false;
 static volatile int server_state = 0; /* 0 stopped, 1 starting, 2 ready, -1 error */
 static int listen_fd = -1;
 static char server_ip[32] = "IP indisponivel";
+static volatile u32 transfer_active = 0;
+static volatile u64 transfer_completed = 0;
+static volatile u64 transfer_failed = 0;
+static volatile u64 transfer_bytes_sent = 0;
+static volatile u64 transfer_bytes_received = 0;
+
 typedef struct {
     Thread thread;
     volatile bool done;
@@ -193,12 +199,14 @@ static void transfer_file(FtpWorker *worker, const char *path, bool upload) {
         reply(control, "425 Data connection failed\r\n");
         return;
     }
+    __atomic_add_fetch(&transfer_active, 1, __ATOMIC_RELAXED);
     char buffer[FTP_IO];
     bool ok = true;
     if (upload) {
         ssize_t n;
         while ((n = recv(data, buffer, sizeof(buffer), 0)) > 0) {
             if (fwrite(buffer, 1, (size_t)n, file) != (size_t)n) { ok = false; break; }
+            __atomic_add_fetch(&transfer_bytes_received, (u64)n, __ATOMIC_RELAXED);
         }
         if (n < 0) ok = false;
         if (n == 0) {
@@ -212,6 +220,7 @@ static void transfer_file(FtpWorker *worker, const char *path, bool upload) {
         size_t n;
         while ((n = fread(buffer, 1, sizeof(buffer), file)) > 0) {
             if (send_all(data, buffer, n) != 0) { ok = false; break; }
+            __atomic_add_fetch(&transfer_bytes_sent, (u64)n, __ATOMIC_RELAXED);
         }
         if (ferror(file)) ok = false;
     }
@@ -226,6 +235,9 @@ static void transfer_file(FtpWorker *worker, const char *path, bool upload) {
             remove(write_path);
         }
     }
+    __atomic_sub_fetch(&transfer_active, 1, __ATOMIC_RELAXED);
+    if (ok) __atomic_add_fetch(&transfer_completed, 1, __ATOMIC_RELAXED);
+    else __atomic_add_fetch(&transfer_failed, 1, __ATOMIC_RELAXED);
     reply(control, ok ? "226 Transfer complete\r\n" : "451 Transfer failed; partial upload removed\r\n");
 }
 static void serve_client(FtpWorker *worker) {
@@ -423,3 +435,12 @@ void ftpServerStop(void) {
 
 int ftpServerState(void) { return server_state; }
 const char *ftpServerIp(void) { return server_ip; }
+
+void ftpServerGetStats(FtpTransferStats *out) {
+    if (!out) return;
+    out->active = __atomic_load_n(&transfer_active, __ATOMIC_RELAXED);
+    out->completed = __atomic_load_n(&transfer_completed, __ATOMIC_RELAXED);
+    out->failed = __atomic_load_n(&transfer_failed, __ATOMIC_RELAXED);
+    out->bytes_sent = __atomic_load_n(&transfer_bytes_sent, __ATOMIC_RELAXED);
+    out->bytes_received = __atomic_load_n(&transfer_bytes_received, __ATOMIC_RELAXED);
+}
