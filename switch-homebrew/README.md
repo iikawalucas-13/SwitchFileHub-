@@ -58,7 +58,7 @@ Se o IP não aparecer no NRO, consulte o IP do Switch nas configurações de Int
 
 ## Limitações importantes
 
-- Uma sessão FTP por vez.
+- Até quatro sessões FTP simultâneas estão previstas no código; esse limite ainda precisa ser validado no console físico.
 - FTP anônimo e sem criptografia; não exponha a porta 5000 à internet.
 - O NRO precisa permanecer aberto.
 - O teste em console físico ainda é necessário para confirmar rede e operações de arquivos.
