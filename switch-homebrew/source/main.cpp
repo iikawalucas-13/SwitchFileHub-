@@ -316,9 +316,11 @@ static void show_info(void) {
 }
 
 
+static bool g_show_transfers = false;
 class HubLayout : public pu::ui::Layout {
 public:
-    pu::ui::elm::TextBlock::Ref header, subtitle, status, path, ftp, files, footer, transfer;
+    pu::ui::elm::TextBlock::Ref header, subtitle, status, path, ftp, files, footer;
+    pu::ui::elm::Button::Ref transfer_button;
     HubLayout() {
         this->SetBackgroundColor(pu::ui::Color(18, 22, 34, 255));
         header = pu::ui::elm::TextBlock::New(34, 22, "SWITCH FILE HUB");
@@ -333,17 +335,16 @@ public:
         ftp->SetColor(pu::ui::Color(150,165,195,255));
         files = pu::ui::elm::TextBlock::New(42, 230, "Carregando arquivos...");
         files->SetColor(pu::ui::Color(235,238,245,255));
-        footer = pu::ui::elm::TextBlock::New(34, 650, "A Abrir   B Voltar   Y Atualizar   X Nova pasta   + Sair");
+        footer = pu::ui::elm::TextBlock::New(34, 650, "A Abrir   B Voltar   Y Atualizar   X Nova pasta   LS Transferencias   + Sair");
         footer->SetColor(pu::ui::Color(180,190,215,255));
-        transfer = pu::ui::elm::TextBlock::New(780, 650, "[ Ver transferencias ]");
-        transfer->SetColor(pu::ui::Color(120,160,255,255));
+        transfer_button = pu::ui::elm::Button::New(900, 640, 330, 54, "Ver transferencias", pu::ui::Color(255,255,255,255), pu::ui::Color(75,95,190,255));
+        transfer_button->SetOnClick([]() { g_show_transfers = !g_show_transfers; });
         this->Add(header); this->Add(subtitle); this->Add(status); this->Add(path);
-        this->Add(ftp); this->Add(files); this->Add(footer); this->Add(transfer);
+        this->Add(ftp); this->Add(files); this->Add(footer); this->Add(transfer_button);
     }
 };
 class HubApplication : public pu::ui::Application {
     HubLayout::Ref layout;
-    bool transfer_screen = false;
 public:
     using Application::Application;
     PU_SMART_CTOR(HubApplication)
@@ -364,14 +365,13 @@ public:
         else if(fs < 0) layout->ftp->SetText("FTP: falha ao iniciar");
         else layout->ftp->SetText("FTP: desligado");
         std::string listing;
-        if(transfer_screen) {
+        if(g_show_transfers) {
             listing = "TRANSFERENCIAS\n\n";
             listing += "O servidor FTP permite enviar e receber arquivos pela rede local.\n";
             listing += "Estado: ";
             listing += (fs == 2 ? "servidor ativo" : "servidor inativo");
             listing += "\n\nA lista detalhada de transferencias sera exibida quando o registro\n";
             listing += "de progresso for integrado ao servidor FTP.";
-            layout->transfer->SetText("[ Voltar ao gerenciador ]");
         } else {
             listing = "ARQUIVOS E PASTAS\n\n";
             if(R_FAILED(mount_result)) listing += directory_status;
@@ -388,7 +388,6 @@ public:
             }
             listing += "\n";
             listing += directory_status;
-            layout->transfer->SetText("[ Ver transferencias ]");
         }
         layout->files->SetText(listing);
     }
@@ -398,7 +397,7 @@ public:
         this->SetOnInput([&](const u64 down,const u64,const u64,const pu::ui::TouchPoint) {
             if(down & HidNpadButton_Plus) { this->Close(); return; }
             if(down & HidNpadButton_X) {
-                if(transfer_screen) transfer_screen = false;
+                if(g_show_transfers) g_show_transfers = false;
                 else if(R_SUCCEEDED(mount_result)) create_folder();
             }
             if(down & HidNpadButton_B) {
@@ -419,7 +418,7 @@ public:
             if(down & HidNpadButton_ZL && !transfer_screen && R_SUCCEEDED(mount_result)) copy_selected();
             if(down & HidNpadButton_ZR && !transfer_screen && R_SUCCEEDED(mount_result)) move_selected();
             if(down & HidNpadButton_Minus && !transfer_screen && R_SUCCEEDED(mount_result)) show_info();
-            if(down & HidNpadButton_StickL) transfer_screen = !transfer_screen;
+            if(down & HidNpadButton_StickL) g_show_transfers = !g_show_transfers;
             refreshText();
         });
         refreshText();
