@@ -199,6 +199,14 @@ static void transfer_file(FtpWorker *worker, const char *path, bool upload) {
         while ((n = recv(data, buffer, sizeof(buffer), 0)) > 0) {
             if (fwrite(buffer, 1, (size_t)n, file) != (size_t)n) { ok = false; break; }
         }
+        if (n < 0) ok = false;
+        if (n == 0) {
+            char probe;
+            ssize_t control_state = recv(control, &probe, 1, MSG_PEEK | MSG_DONTWAIT);
+            if (control_state == 0 ||
+                (control_state < 0 && errno != EAGAIN && errno != EWOULDBLOCK && errno != EINTR))
+                ok = false;
+        }
     } else {
         size_t n;
         while ((n = fread(buffer, 1, sizeof(buffer), file)) > 0) {
