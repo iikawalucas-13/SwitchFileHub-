@@ -1,26 +1,24 @@
-# Relatório de testes — Switch File Hub 1.0
+# Relatório de testes — Switch File Hub
 
-## Executado neste ambiente
-- Leitura e análise completa do ZIP original (586 linhas em `main.dart`).
-- Conferência de balanceamento de chaves/parênteses nos 17 arquivos Dart.
-- Conferência em Python das expressões regulares de MLSD/LIST/PASV usadas pelo cliente FTP.
+## Código e validações
+- O NRO foi atualizado para iniciar um servidor FTP integrado ao próprio homebrew, na porta TCP 5000.
+- O servidor implementa login anônimo, PASV/EPSV, MLSD/LIST, PWD/CWD/CDUP, SIZE, STOR/RETR, MKD, DELE, RMD e RNFR/RNTO.
+- Os caminhos do FTP são convertidos para o dispositivo `sdmc:/` e rejeitam segmentos de travessia `..` e prefixos de dispositivo.
+- Upload usa um arquivo temporário e só renomeia para o destino após o recebimento; o cliente deve confirmar a substituição quando necessário.
+- A implementação foi submetida ao workflow **Build Switch Homebrew NRO**. Os logs reais do Actions devem ser consultados para o commit mais recente antes de considerar a compilação validada.
 
-## NÃO executado (ambiente sem Flutter/Dart e sem rede para instalar)
-- `flutter pub get`, `flutter analyze`, `flutter test`
-- Compilação Windows (`.exe`) e Android (`.apk`), geração do instalador
-- Testes de integração contra servidor FTP (existem em `test/integration`, rodam no CI com pyftpdlib)
-- Conexão com Nintendo Switch real
+## Testes ainda necessários
+- Teste em Nintendo Switch físico: iniciar o NRO, confirmar IP/porta, conectar por Android e Windows, listar arquivos, enviar e baixar arquivos, criar pasta, renomear, excluir, desconectar e fechar o NRO.
+- Testar transferência interrompida, pouco espaço no microSD, suspensão/retorno do console e desconexão Wi-Fi.
+- Confirmar a compilação Android APK e Windows x64 pelo workflow do cliente.
+- Testar descoberta automática e conexão manual por IP/porta com o servidor integrado.
+- Confirmar que o aplicativo não exige iniciar ftpd separado.
 
-## Testes escritos (para rodar no CI ou localmente)
-| Arquivo | Cobre |
-|---|---|
-| `test/format_test.dart` | validação de nomes/caminhos, anti-traversal, tamanhos/ETA, parsers MLSD/LIST, JSON do histórico |
-| (em `format_test.dart`) | cálculo da faixa de IPs da detecção automática |
-| `test/widget_test.dart` | abertura do app, navegação Início → Conectar Switch |
-| `test/integration/ftp_integration_test.dart` | conexão, listagem, criar pasta, renomear, excluir, upload/download de 20 MB com comparação byte a byte, não-substituição silenciosa, cancelamento de upload de 400 MB com remoção do parcial, conexão recusada |
+## Limitações
+- FTP anônimo, sem criptografia; somente rede local confiável.
+- Uma sessão de controle por vez; não há FTPS/SFTP nem retomada REST.
+- A compilação CI não comprova funcionamento em hardware real.
+- O cliente Flutter está dentro de `SwitchFileHub_1.0_FINAL.zip`; sua validação precisa ocorrer no workflow Android/Windows.
 
-## Mudança de arquitetura que você deve saber
-O pacote `ftpconnect` foi **removido**: sua documentação pública não confirmou a API que o protótipo usava e ele não permite cancelar transferências. Foi substituído por um cliente FTP próprio (`ftp_client.dart`). Isso é código novo e ainda sem execução.
-
-## Próximo passo
-Rodar o workflow `build.yml` (ou `build_windows.bat`), corrigir o que o `flutter analyze`/testes apontarem e testar com o Switch real (o ftpd aberto na rede local).
+## Resultado honesto
+**Em desenvolvimento.** O servidor FTP integrado foi adicionado ao código do NRO. A entrega só poderá ser considerada validada após compilações relevantes do NRO e do cliente, inspeção dos artefatos/logs e teste funcional no console físico.
