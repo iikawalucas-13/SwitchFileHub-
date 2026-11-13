@@ -7,7 +7,7 @@
 - O NRO precisa permanecer aberto durante o uso. Fechar o homebrew encerra o servidor.
 - A identificação automática do IP depende da interface de rede ativa; se o endereço não aparecer, consulte o IP nas configurações de Internet do Switch ou use a descoberta de dispositivos do cliente.
 - A implementação foi compilada em CI, mas ainda não foi validada em um Switch físico. Operações reais de listagem, upload, download, renomeação, exclusão, desconexão e suspensão do console continuam pendentes de teste no hardware.
-- O servidor atende uma sessão FTP por vez; transferências concorrentes e vários clientes simultâneos não foram validados.
+- O servidor atende até quatro sessões FTP simultâneas no código (pendente de validação em hardware); transferências concorrentes e vários clientes simultâneos não foram validados.
 - FTP transmite dados sem criptografia e sem autenticação. Não é adequado para redes públicas ou não confiáveis.
 - O servidor não implementa FTPS/SFTP, retomada de transferência (REST), nem cópia/movimentação recursiva pelo próprio NRO.
 - O upload usa arquivo temporário antes de publicar o destino; ainda precisa ser testado em interrupções reais e em cartões microSD com pouco espaço.
