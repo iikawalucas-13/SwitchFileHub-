@@ -26,10 +26,8 @@ jobs:
       - name: Baixar repositório
         uses: actions/checkout@v4
 
-      - name: Instalar dependencias da interface grafica
-        run: |
-          dkp-pacman -Sy --noconfirm switch-sdl2 switch-sdl2_ttf switch-sdl2_image switch-sdl2_gfx switch-sdl2_mixer switch-mesa switch-glad switch-glm switch-libdrm_nouveau switch-libwebp switch-libpng switch-freetype switch-bzip2 switch-libjpeg-turbo switch-opusfile switch-libopus
-
+      # A imagem oficial devkitpro/devkita64 já inclui as portlibs do Switch.
+      # Não executar dkp-pacman no CI: o servidor de pacotes pode responder 403.
       - name: Baixar e compilar Plutonium
         run: |
           cd switch-homebrew
