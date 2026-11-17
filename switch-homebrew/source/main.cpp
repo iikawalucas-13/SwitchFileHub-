@@ -384,7 +384,15 @@ public:
         this->Add(ftp);
         this->Add(path);
         this->Add(files);
-        this->Add(shortcuts);
+        this->Add(key_a);
+        this->Add(key_b);
+        this->Add(key_y);
+        this->Add(key_x);
+        this->Add(key_l);
+        this->Add(key_r);
+        this->Add(key_zl);
+        this->Add(key_zr);
+        this->Add(key_minus);
         this->Add(transfer_button);
     }
 };
