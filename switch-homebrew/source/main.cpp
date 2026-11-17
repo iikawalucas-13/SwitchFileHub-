@@ -320,7 +320,8 @@ static bool g_show_transfers = false;
 class HubLayout : public pu::ui::Layout {
 public:
     pu::ui::elm::TextBlock::Ref header, subtitle, path, files;
-    pu::ui::elm::Button::Ref status, ftp, transfer_button;\n    pu::ui::elm::Button::Ref key_a, key_b, key_y, key_x, key_l, key_r, key_zl, key_zr, key_minus;
+    pu::ui::elm::Button::Ref status, ftp, transfer_button;
+    pu::ui::elm::Button::Ref key_a, key_b, key_y, key_x, key_l, key_r, key_zl, key_zr, key_minus;
     pu::ui::elm::Button::Ref files_panel, tools_panel, brand_panel;
     PU_SMART_CTOR(HubLayout)
     HubLayout() {
