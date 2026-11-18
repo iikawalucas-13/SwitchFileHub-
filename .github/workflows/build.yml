@@ -1,10 +1,12 @@
 name: Build Switch File Hub
+# Rebuild Android APK against the current development branch.
 
 on:
   push:
-    branches: [main]
+    branches: [main, fix/switch-browser-diagnostics, feat/switch-logo-nro, feat/switch-gui-plutonium]
     paths:
       - 'SwitchFileHub_1.0_FINAL.zip'
+      - 'client_overrides/**'
       - '.github/workflows/build.yml'
   workflow_dispatch:
 
@@ -27,8 +29,15 @@ jobs:
           Expand-Archive -LiteralPath $zip -DestinationPath "$env:RUNNER_TEMP\sfh-source" -Force
           $pubspec = Get-ChildItem "$env:RUNNER_TEMP\sfh-source" -Filter pubspec.yaml -Recurse | Select-Object -First 1
           if (!$pubspec) { throw 'pubspec.yaml não foi encontrado dentro do ZIP.' }
-          "PROJECT_DIR=$($pubspec.Directory.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
-          Write-Host "Projeto encontrado em $($pubspec.Directory.FullName)"
+          $projectDir = $pubspec.Directory.FullName
+          "PROJECT_DIR=$projectDir" | Out-File -FilePath $env:GITHUB_ENV -Append
+          $env:PROJECT_DIR = $projectDir
+          Write-Host "Projeto encontrado em $projectDir"
+          $overlay = Join-Path $env:GITHUB_WORKSPACE 'client_overrides\lib'
+          if (Test-Path $overlay) {
+            New-Item -ItemType Directory -Force -Path (Join-Path $projectDir 'lib') | Out-Null
+            Copy-Item -Path "$overlay\*" -Destination (Join-Path $projectDir 'lib') -Recurse -Force
+          }
 
       - name: Instalar Flutter
         uses: subosito/flutter-action@v2
@@ -92,6 +101,10 @@ jobs:
           fi
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
           echo "Projeto encontrado em $PROJECT_DIR"
+          if [ -d "$GITHUB_WORKSPACE/client_overrides/lib" ]; then
+            mkdir -p "$PROJECT_DIR/lib"
+            cp -R "$GITHUB_WORKSPACE/client_overrides/lib/." "$PROJECT_DIR/lib/"
+          fi
 
       - name: Instalar Flutter
         uses: subosito/flutter-action@v2
@@ -116,19 +129,6 @@ jobs:
         run: |
           cd "$PROJECT_DIR"
           flutter pub get
-          python3 - <<'PY'
-          from pathlib import Path
-          matches = list(Path.home().joinpath(".pub-cache/hosted/pub.dev").glob("desktop_drop-*/android/build.gradle"))
-          if not matches:
-              raise SystemExit("Não encontrei o build.gradle Android do pacote desktop_drop no cache do Pub.")
-          gradle = matches[0]
-          source = gradle.read_text()
-          updated = source.replace("compileSdk 33", "compileSdk 35").replace("compileSdkVersion 33", "compileSdkVersion 35")
-          if updated == source:
-              raise SystemExit(f"Não encontrei uma declaração compileSdk 33 em {gradle}")
-          gradle.write_text(updated)
-          print(f"Atualizado compileSdk para 35 em {gradle}")
-          PY
           yes | sdkmanager --licenses >/dev/null
           sdkmanager "platforms;android-35"
           flutter analyze --no-fatal-infos --no-fatal-warnings
