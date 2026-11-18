@@ -19,7 +19,7 @@ extern "C" bool __nx_fsdev_support_cwd;
 #define MAX_ENTRIES 128
 #define NAME_LENGTH 256
 #define PATH_LENGTH 1024
-#define PAGE_SIZE 10
+#define PAGE_SIZE 6
 #define COPY_BUFFER_SIZE 16384
 
 typedef struct {
@@ -325,7 +325,7 @@ public:
     pu::ui::elm::Button::Ref files_panel, tools_panel, brand_panel;
     PU_SMART_CTOR(HubLayout)
     HubLayout() {
-        // Interface em uma coluna: elimina a coluna lateral que espremia os textos.
+        // Interface reorganizada para leitura: arquivos acima e comandos em botoes grandes.
         this->SetBackgroundColor(pu::ui::Color(10, 14, 23, 255));
 
         brand_panel = pu::ui::elm::Button::New(24, 18, 1232, 66,
@@ -350,26 +350,26 @@ public:
         path = pu::ui::elm::TextBlock::New(42, 264, "MICROSD  /  sdmc:/");
         path->SetColor(pu::ui::Color(104,205,255,255));
 
-        files_panel = pu::ui::elm::Button::New(24, 292, 1232, 270,
+        files_panel = pu::ui::elm::Button::New(24, 292, 1232, 226,
             " ", pu::ui::Color(255,255,255,255), pu::ui::Color(22,29,42,255));
         files_panel->SetOnClick([]() {});
         files = pu::ui::elm::TextBlock::New(48, 310, "ARQUIVOS\\n\\nCarregando...");
         files->SetColor(pu::ui::Color(242,246,252,255));
 
-        // Controles em botoes separados, organizados em duas linhas.
+        // Controles grandes em tres colunas, com espaco entre botoes e legenda curta.
         const auto key_text = pu::ui::Color(245,248,255,255);
         const auto key_bg = pu::ui::Color(34,48,67,255);
-        key_a = pu::ui::elm::Button::New(24, 580, 230, 42, "A  |  ABRIR", key_text, key_bg);
-        key_b = pu::ui::elm::Button::New(266, 580, 230, 42, "B  |  VOLTAR", key_text, key_bg);
-        key_y = pu::ui::elm::Button::New(508, 580, 230, 42, "Y  |  ATUALIZAR", key_text, key_bg);
-        key_x = pu::ui::elm::Button::New(750, 580, 230, 42, "X  |  NOVA PASTA", key_text, key_bg);
-        key_l = pu::ui::elm::Button::New(992, 580, 264, 42, "L  |  RENOMEAR", key_text, key_bg);
-        key_r = pu::ui::elm::Button::New(24, 632, 230, 42, "R  |  EXCLUIR", key_text, key_bg);
-        key_zl = pu::ui::elm::Button::New(266, 632, 230, 42, "ZL  |  COPIAR", key_text, key_bg);
-        key_zr = pu::ui::elm::Button::New(508, 632, 230, 42, "ZR  |  MOVER", key_text, key_bg);
-        key_minus = pu::ui::elm::Button::New(750, 632, 230, 42, "-  |  INFORMACOES", key_text, key_bg);
+        key_a = pu::ui::elm::Button::New(24, 530, 400, 44, "A   ABRIR", key_text, key_bg);
+        key_b = pu::ui::elm::Button::New(440, 530, 400, 44, "B   VOLTAR", key_text, key_bg);
+        key_y = pu::ui::elm::Button::New(856, 530, 400, 44, "Y   ATUALIZAR", key_text, key_bg);
+        key_x = pu::ui::elm::Button::New(24, 582, 400, 44, "X   NOVA PASTA", key_text, key_bg);
+        key_l = pu::ui::elm::Button::New(440, 582, 400, 44, "L   RENOMEAR", key_text, key_bg);
+        key_r = pu::ui::elm::Button::New(856, 582, 400, 44, "R   EXCLUIR", key_text, key_bg);
+        key_zl = pu::ui::elm::Button::New(24, 634, 400, 44, "ZL   COPIAR", key_text, key_bg);
+        key_zr = pu::ui::elm::Button::New(440, 634, 400, 44, "ZR   MOVER", key_text, key_bg);
+        key_minus = pu::ui::elm::Button::New(856, 634, 400, 44, "-   INFORMACOES", key_text, key_bg);
 
-        transfer_button = pu::ui::elm::Button::New(992, 632, 264, 42,
+        transfer_button = pu::ui::elm::Button::New(24, 686, 1232, 30,
             "TRANSFERENCIAS FTP", pu::ui::Color(255,255,255,255),
             pu::ui::Color(35,111,190,255));
         transfer_button->SetOnClick([this]() {
